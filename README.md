@@ -14,4 +14,5 @@
 - Adding Coding tab - where users can train their coding abilities.
 - Adding Interact tab - where users can interact with other users in order to exchange knowledge and grow together.
 - Adjusting the Top Creators tab to list the top users according to some advanced methodology. E.g; Calculating contribution score, ranking users based on their contributions and their Coding tab’s scores.
+- Adding Edit/Remove profile pictures and fix photos dimension matching issue.
 
