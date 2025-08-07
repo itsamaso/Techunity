@@ -53,10 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           bio: currentAccount.bio,
         });
         setIsAuthenticated(true);
-
         return true;
       }
-
       return false;
     } catch (error) {
       console.error(error);
@@ -74,9 +72,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       cookieFallback === undefined
     ) {
       navigate("/sign-in");
+    } else {
+      checkAuthUser();
     }
-
-    checkAuthUser();
   }, []);
 
   const value = {

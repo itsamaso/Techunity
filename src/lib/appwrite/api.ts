@@ -19,30 +19,47 @@ export async function initAppwriteSession() {
 
 // ============================== SIGN UP
 export async function createUserAccount(user: INewUser) {
+  let createdAccount = null;
+  
   try {
-    const newAccount = await account.create(
+    // First, create the Appwrite account
+    createdAccount = await account.create(
       ID.unique(),
       user.email,
       user.password,
       user.name
     );
 
-    if (!newAccount) throw Error;
+    if (!createdAccount) throw Error;
 
     const avatarUrl = avatars.getInitials(user.name);
 
+    // Then, create the database user
     const newUser = await saveUserToDB({
-      accountId: newAccount.$id,
-      name: newAccount.name,
-      email: newAccount.email,
+      accountId: createdAccount.$id,
+      name: createdAccount.name,
+      email: createdAccount.email,
       username: user.username,
-      imageUrl: avatarUrl,
+      imageUrl: avatarUrl.toString(),
     });
+
+    if (!newUser) {
+      // If database creation fails, we can't easily delete the Appwrite account
+      // The account will remain but without a database record
+      console.log("Database user creation failed, but Appwrite account was created");
+      throw Error;
+    }
 
     return newUser;
   } catch (error) {
-    console.log(error);
-    return error;
+    console.log("Create user account error:", error);
+    
+    // Clean up any partially created account
+    if (createdAccount) {
+      console.log("Appwrite account was created but database user creation failed");
+    }
+    
+    throw error;
   }
 }
 
@@ -51,7 +68,7 @@ export async function saveUserToDB(user: {
   accountId: string;
   email: string;
   name: string;
-  imageUrl: URL;
+  imageUrl: string;
   username?: string;
 }) {
   try {
@@ -62,20 +79,34 @@ export async function saveUserToDB(user: {
       user
     );
 
+    if (!newUser) throw Error;
+
     return newUser;
   } catch (error) {
-    console.log(error);
+    console.log("Save user to DB error:", error);
+    throw error;
   }
 }
 
 // ============================== SIGN IN
 export async function signInAccount(user: { email: string; password: string }) {
   try {
+    // First, try to delete any existing sessions
+    try {
+      await account.deleteSessions();
+    } catch (sessionError) {
+      // Ignore session deletion errors
+      console.log("Session cleanup error (ignored):", sessionError);
+    }
+
     const session = await account.createEmailSession(user.email, user.password);
+
+    if (!session) throw Error;
 
     return session;
   } catch (error) {
-    console.log(error);
+    console.log("Sign in error:", error);
+    throw error;
   }
 }
 
@@ -95,7 +126,10 @@ export async function getCurrentUser() {
   try {
     const currentAccount = await getAccount();
 
-    if (!currentAccount) throw Error;
+    if (!currentAccount) {
+      console.log("No current account found");
+      return null;
+    }
 
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
@@ -103,11 +137,14 @@ export async function getCurrentUser() {
       [Query.equal("accountId", currentAccount.$id)]
     );
 
-    if (!currentUser) throw Error;
+    if (!currentUser || currentUser.documents.length === 0) {
+      console.log("No user document found for account:", currentAccount.$id);
+      return null;
+    }
 
     return currentUser.documents[0];
   } catch (error) {
-    console.log(error);
+    console.log("Get current user error:", error);
     return null;
   }
 }
@@ -120,6 +157,17 @@ export async function signOutAccount() {
     return session;
   } catch (error) {
     console.log(error);
+  }
+}
+
+// ============================== CLEAR ALL SESSIONS
+export async function clearAllSessions() {
+  try {
+    await account.deleteSessions();
+    return true;
+  } catch (error) {
+    console.log("Clear sessions error:", error);
+    return false;
   }
 }
 
@@ -548,5 +596,112 @@ export async function updateUser(user: IUpdateUser) {
     return updatedUser;
   } catch (error) {
     console.log(error);
+  }
+}
+
+// ============================================================
+// FOLLOW SYSTEM
+// ============================================================
+
+// ============================== FOLLOW USER
+export async function followUser(followerId: string, followingId: string) {
+  try {
+    // Check if already following
+    const existingFollow = await checkIfFollowing(followerId, followingId);
+    if (existingFollow) {
+      return existingFollow; // Already following
+    }
+
+    const followRecord = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      ID.unique(),
+      {
+        follower: followerId,
+        following: followingId,
+      }
+    );
+
+    if (!followRecord) throw Error;
+
+    return followRecord;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+// ============================== UNFOLLOW USER
+export async function unfollowUser(followRecordId: string) {
+  try {
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      followRecordId
+    );
+
+    if (!statusCode) throw Error;
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+// ============================== GET FOLLOWERS COUNT
+export async function getFollowersCount(userId: string) {
+  try {
+    if (!userId) return 0;
+    
+    const followers = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      [Query.equal("following", userId)]
+    );
+
+    return followers?.total || 0;
+  } catch (error) {
+    console.log(error);
+    return 0;
+  }
+}
+
+// ============================== GET FOLLOWING COUNT
+export async function getFollowingCount(userId: string) {
+  try {
+    if (!userId) return 0;
+    
+    const following = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      [Query.equal("follower", userId)]
+    );
+
+    return following?.total || 0;
+  } catch (error) {
+    console.log(error);
+    return 0;
+  }
+}
+
+// ============================== CHECK IF FOLLOWING
+export async function checkIfFollowing(followerId: string, followingId: string) {
+  try {
+    if (!followerId || !followingId) return null;
+    
+    const followRecord = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      [
+        Query.equal("follower", followerId),
+        Query.equal("following", followingId),
+      ]
+    );
+
+    return followRecord?.documents?.[0] || null;
+  } catch (error) {
+    console.log(error);
+    return null;
   }
 }

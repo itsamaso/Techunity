@@ -17,6 +17,15 @@ const GridPostList = ({
 }: GridPostListProps) => {
   const { user } = useUserContext();
 
+  // Safety check - if posts is undefined or null, don't render
+  if (!posts || !Array.isArray(posts)) {
+    return (
+      <div className="flex-center w-full h-24">
+        <p className="text-light-3">No posts found</p>
+      </div>
+    );
+  }
+
   return (
     <ul className="grid-container">
       {posts.map((post) => (

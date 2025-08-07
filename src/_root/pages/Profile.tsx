@@ -1,27 +1,22 @@
+import { useParams, Link, useLocation } from "react-router-dom";
+
+import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/shared";
+import { GridPostList } from "@/components/shared";
+import FollowButton from "@/components/shared/FollowButton";
+
 import {
-  Route,
-  Routes,
-  Link,
-  Outlet,
-  useParams,
-  useLocation,
-} from "react-router-dom";
-
-import { Button } from "@/components/ui";
-import { LikedPosts } from "@/_root/pages";
+  useGetUserById,
+  useGetUserPosts,
+  useGetFollowersCount,
+  useGetFollowingCount,
+} from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById } from "@/lib/react-query/queries";
-import { GridPostList, Loader } from "@/components/shared";
 
-interface StabBlockProps {
-  value: string | number;
-  label: string;
-}
-
-const StatBlock = ({ value, label }: StabBlockProps) => (
+const StatBlock = ({ value, label }: { value: number; label: string }) => (
   <div className="flex-center gap-2">
-    <p className="small-semibold lg:body-bold text-primary-500">{value}</p>
-    <p className="small-medium lg:base-medium text-light-2">{label}</p>
+    <p className="small-semibold lg:base-semibold">{value}</p>
+    <p className="small-medium lg:base-medium text-light-3">{label}</p>
   </div>
 );
 
@@ -31,6 +26,9 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
+  const { data: userPosts } = useGetUserPosts(currentUser?.$id);
+  const { data: followersCount = 0 } = useGetFollowersCount(id || "");
+  const { data: followingCount = 0 } = useGetFollowingCount(id || "");
 
   if (!currentUser)
     return (
@@ -40,8 +38,22 @@ const Profile = () => {
     );
 
   return (
-    <div className="profile-container">
-      <div className="profile-inner_container">
+    <div className="flex flex-1">
+      <div className="common-container">
+        <div className="flex items-center gap-3 mb-6 p-6 rounded-3xl bg-gradient-to-br from-blue-100/85 via-indigo-100/80 to-purple-100/85 border-2 border-primary-500/30 shadow-2xl backdrop-blur-md">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-primary-500/25 to-secondary-500/25 shadow-md">
+            <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-4xl font-black bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-600 bg-clip-text text-transparent tracking-tight drop-shadow-lg">Profile</h2>
+            <p className="text-base text-gray-800 font-bold mt-2">View and manage your profile</p>
+          </div>
+        </div>
+
+        <div className="profile-container">
+          <div className="profile-inner_container">
         <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
           <img
             src={
@@ -61,9 +73,9 @@ const Profile = () => {
             </div>
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
-              <StatBlock value={currentUser.posts.length} label="Posts" />
-              <StatBlock value={20} label="Followers" />
-              <StatBlock value={20} label="Following" />
+              <StatBlock value={userPosts?.documents?.length || 0} label="Posts" />
+              <StatBlock value={followersCount} label="Followers" />
+              <StatBlock value={followingCount} label="Following" />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">
@@ -90,9 +102,7 @@ const Profile = () => {
               </Link>
             </div>
             <div className={`${user.id === id && "hidden"}`}>
-              <Button type="button" className="shad-button_primary px-8">
-                Follow
-              </Button>
+              <FollowButton targetUserId={currentUser.$id} className="px-8" />
             </div>
           </div>
         </div>
@@ -129,16 +139,11 @@ const Profile = () => {
         </div>
       )}
 
-      <Routes>
-        <Route
-          index
-          element={<GridPostList posts={currentUser.posts} showUser={false} />}
-        />
-        {currentUser.$id === user.id && (
-          <Route path="/liked-posts" element={<LikedPosts />} />
-        )}
-      </Routes>
-      <Outlet />
+      <div className="flex max-w-5xl w-full">
+        <GridPostList posts={userPosts?.documents || []} showUser={false} />
+      </div>
+        </div>
+      </div>
     </div>
   );
 };

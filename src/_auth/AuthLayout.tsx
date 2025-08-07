@@ -1,26 +1,36 @@
 import { Outlet, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 
 import { useUserContext } from "@/context/AuthContext";
 
 export default function AuthLayout() {
   const { isAuthenticated } = useUserContext();
 
+  useEffect(() => {
+    // Add a class to the body element for auth pages
+    document.body.classList.add('auth-page-active');
+    
+    // Cleanup function
+    return () => {
+      document.body.classList.remove('auth-page-active');
+    };
+  }, []);
+
   return (
     <>
       {isAuthenticated ? (
         <Navigate to="/" />
       ) : (
-        <>
-          <section className="flex flex-1 justify-center items-center flex-col py-10">
-            <Outlet />
-          </section>
-
-          <img
-            src="/assets/images/side-img.jpg"
-            alt="Techunity side image"
-            className="hidden xl:block h-screen w-1/2 object-cover bg-no-repeat"
-          />
-        </>
+        <div style={{ 
+          minHeight: '100vh', 
+          backgroundColor: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <Outlet />
+        </div>
       )}
     </>
   );

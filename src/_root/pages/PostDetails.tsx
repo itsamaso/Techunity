@@ -28,8 +28,20 @@ const PostDetails = () => {
   );
 
   const handleDeletePost = () => {
-    deletePost({ postId: id, imageId: post?.imageId });
-    navigate(-1);
+    if (id && post?.imageId) {
+      deletePost(
+        { postId: id, imageId: post.imageId },
+        {
+          onSuccess: () => {
+            navigate(-1);
+          },
+          onError: (error) => {
+            console.error("Failed to delete post:", error);
+            // You could add a toast notification here
+          },
+        }
+      );
+    }
   };
 
   return (
@@ -103,7 +115,7 @@ const PostDetails = () => {
                 <Button
                   onClick={handleDeletePost}
                   variant="ghost"
-                  className={`ost_details-delete_btn ${
+                  className={`post_details-delete_btn ${
                     user.id !== post?.creator.$id && "hidden"
                   }`}>
                   <img
@@ -147,7 +159,7 @@ const PostDetails = () => {
         {isUserPostLoading || !relatedPosts ? (
           <Loader />
         ) : (
-          <GridPostList posts={relatedPosts} />
+          <GridPostList posts={relatedPosts || []} />
         )}
       </div>
     </div>

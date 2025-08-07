@@ -1,30 +1,25 @@
 import { Models } from "appwrite";
+import { Link } from "react-router-dom";
 
 // import { useToast } from "@/components/ui/use-toast";
-import { Loader, PostCard, UserCard } from "@/components/shared";
-import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
+import { Loader, PostCard } from "@/components/shared";
+import { useGetRecentPosts } from "@/lib/react-query/queries";
+import { useUserContext } from "@/context/AuthContext";
 
 const Home = () => {
   // const { toast } = useToast();
+  const { user } = useUserContext();
 
   const {
     data: posts,
     isLoading: isPostLoading,
     isError: isErrorPosts,
   } = useGetRecentPosts();
-  const {
-    data: creators,
-    isLoading: isUserLoading,
-    isError: isErrorCreators,
-  } = useGetUsers(10);
 
-  if (isErrorPosts || isErrorCreators) {
+  if (isErrorPosts) {
     return (
       <div className="flex flex-1">
-        <div className="home-container">
-          <p className="body-medium text-light-1">Something bad happened</p>
-        </div>
-        <div className="home-creators">
+        <div className="common-container">
           <p className="body-medium text-light-1">Something bad happened</p>
         </div>
       </div>
@@ -33,36 +28,48 @@ const Home = () => {
 
   return (
     <div className="flex flex-1">
-      <div className="home-container">
-        <div className="home-posts">
-          <h2 className="h3-bold md:h2-bold text-left w-full">Home Feed</h2>
+      <div className="common-container">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center gap-3 mb-6 p-6 rounded-3xl bg-gradient-to-br from-blue-100/85 via-indigo-100/80 to-purple-100/85 border-2 border-primary-500/30 shadow-2xl backdrop-blur-md">
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-primary-500/25 to-secondary-500/25 shadow-md">
+              <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-4xl font-black bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-600 bg-clip-text text-transparent tracking-tight drop-shadow-lg">Home Feed</h2>
+              <p className="text-base text-gray-800 font-bold mt-2">Discover the latest from your network</p>
+            </div>
+          </div>
           {isPostLoading && !posts ? (
             <Loader />
-          ) : (
-            <ul className="flex flex-col flex-1 gap-9 w-full ">
-              {posts?.documents.map((post: Models.Document) => (
+          ) : posts?.documents && posts.documents.length > 0 ? (
+            <ul className="flex flex-col flex-1 gap-9 w-full">
+              {posts.documents.map((post: Models.Document) => (
                 <li key={post.$id} className="flex justify-center w-full">
                   <PostCard post={post} />
                 </li>
               ))}
             </ul>
+          ) : (
+            <div className="flex flex-col items-center justify-center w-full py-20">
+              <div className="p-8 rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-md border border-light-4/30 shadow-xl">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary-500/20 to-secondary-500/20 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-light-1 mb-2">No posts yet</h3>
+                  <p className="text-light-3 mb-6">Be the first to share something amazing!</p>
+                  <Link to="/create-post" className="shad-button_primary px-6 py-3 rounded-xl">
+                    Create Your First Post
+                  </Link>
+                </div>
+              </div>
+            </div>
           )}
         </div>
-      </div>
-
-      <div className="home-creators">
-        <h3 className="h3-bold text-light-1">Top Creators</h3>
-        {isUserLoading && !creators ? (
-          <Loader />
-        ) : (
-          <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.documents.map((creator) => (
-              <li key={creator?.$id}>
-                <UserCard user={creator} />
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
     </div>
   );
