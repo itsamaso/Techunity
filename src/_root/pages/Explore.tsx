@@ -28,8 +28,9 @@ const Explore = () => {
   const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
 
   const [searchValue, setSearchValue] = useState("");
+  const [searchType, setSearchType] = useState<'caption' | 'tags'>('caption');
   const debouncedSearch = useDebounce(searchValue, 500);
-  const { data: searchedPosts, isFetching: isSearchFetching } = useSearchPosts(debouncedSearch);
+  const { data: searchedPosts, isFetching: isSearchFetching } = useSearchPosts(debouncedSearch, searchType);
 
   useEffect(() => {
     if (inView && !searchValue) {
@@ -63,17 +64,69 @@ const Explore = () => {
           </div>
         </div>
 
-        <div className="flex gap-1 px-4 w-full rounded-lg bg-dark-4 mb-6">
+        {/* Search Type Selector */}
+        <div className="flex flex-col items-center gap-4 mb-6 w-full">
+          <label className="text-sm font-semibold text-light-1 flex items-center gap-2 bg-dark-2 px-3 py-2 rounded-lg border border-dark-4/50 shadow-md">
+            <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+            </svg>
+            Search Type
+          </label>
+          <div className="flex bg-dark-2 rounded-2xl p-2 shadow-xl border-2 border-dark-4/50 relative w-96">
+            <button
+              onClick={() => setSearchType('caption')}
+              className={`flex items-center justify-center gap-3 px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300 relative z-10 w-[calc(50%-4px)] ${
+                searchType === 'caption'
+                  ? 'text-white drop-shadow-lg'
+                  : 'text-light-2 hover:text-light-1 hover:bg-dark-4/50'
+              }`}
+            >
+              <svg className={`w-5 h-5 ${searchType === 'caption' ? 'text-white drop-shadow-lg' : 'text-light-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+              Caption
+            </button>
+            
+            {/* Vertical Separator */}
+            <div className="w-px bg-dark-4/60 mx-1 z-20 relative"></div>
+            
+            <button
+              onClick={() => setSearchType('tags')}
+              className={`flex items-center justify-center gap-3 px-8 py-3 rounded-xl text-base font-semibold transition-all duration-300 relative z-10 w-[calc(50%-4px)] ${
+                searchType === 'tags'
+                  ? 'text-white drop-shadow-lg'
+                  : 'text-light-2 hover:text-light-1 hover:bg-dark-4/50'
+              }`}
+            >
+              <svg className={`w-5 h-5 ${searchType === 'tags' ? 'text-white drop-shadow-lg' : 'text-light-3'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              Tags
+            </button>
+            
+            {/* Enhanced animated background indicator */}
+            <div 
+              className={`absolute top-2 bottom-2 rounded-xl bg-gradient-to-r from-slate-500 via-slate-600 to-slate-700 shadow-xl transition-all duration-400 ease-out ${
+                searchType === 'caption' 
+                  ? 'left-2 w-[calc(50%-12px)]' 
+                  : 'left-[calc(50%+4px)] w-[calc(50%-12px)]'
+              }`}
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-1 px-4 w-full rounded-xl bg-dark-4 mb-6 border-2 border-dark-4/50 focus-within:border-primary-500/50 transition-all duration-300 shadow-lg">
           <img
             src="/assets/icons/search.svg"
             width={24}
             height={24}
             alt="search"
+            className="opacity-70"
           />
           <Input
             type="text"
-            placeholder="Search"
-            className="explore-search"
+            placeholder={`Search by ${searchType === 'caption' ? 'caption' : 'tags'}...`}
+            className="explore-search border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-light-4/70"
             value={searchValue}
             onChange={(e) => {
               const { value } = e.target;

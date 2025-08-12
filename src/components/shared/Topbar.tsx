@@ -44,14 +44,14 @@ const TopBar = () => {
       
       <div className="flex items-center justify-between h-20 px-8 relative z-10">
         {/* Logo Section - Always visible */}
-        <Link to="/" className="flex items-center group">
+        <Link to="/" className="flex flex-col items-center group">
           <div className="relative">
             <h1 className="text-3xl font-black bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 bg-clip-text text-transparent group-hover:scale-105 transition-all duration-300 drop-shadow-xl tracking-tight">
               Techunity
             </h1>
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full animate-pulse shadow-xl"></div>
           </div>
-          <p className="text-xs font-semibold bg-gradient-to-r from-light-2 to-light-3 bg-clip-text text-transparent group-hover:from-primary-500 group-hover:to-secondary-500 transition-all duration-300 ml-3 leading-tight">
+          <p className="text-sm font-bold bg-gradient-to-r from-primary-500 via-secondary-500 to-primary-500 bg-clip-text text-transparent group-hover:from-primary-600 group-hover:via-secondary-600 group-hover:to-primary-600 transition-all duration-300 mt-1 leading-tight tracking-wide">
             Connect, Collaborate & Grow
           </p>
         </Link>

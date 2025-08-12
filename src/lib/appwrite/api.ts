@@ -178,16 +178,24 @@ export async function clearAllSessions() {
 // ============================== CREATE POST
 export async function createPost(post: INewPost) {
   try {
-    // Upload file to appwrite storage
-    const uploadedFile = await uploadFile(post.file[0]);
+    let imageUrl = "";
+    let imageId = "no-image"; // Use a placeholder value for posts without images
 
-    if (!uploadedFile) throw Error;
+    // Handle file upload if provided
+    if (post.file && post.file.length > 0) {
+      const uploadedFile = await uploadFile(post.file[0]);
 
-    // Get file url
-    const fileUrl = getFilePreview(uploadedFile.$id);
-    if (!fileUrl) {
-      await deleteFile(uploadedFile.$id);
-      throw Error;
+      if (!uploadedFile) throw Error;
+
+      // Get file url
+      const fileUrl = getFilePreview(uploadedFile.$id);
+      if (!fileUrl) {
+        await deleteFile(uploadedFile.$id);
+        throw Error;
+      }
+
+      imageUrl = fileUrl;
+      imageId = uploadedFile.$id;
     }
 
     // Convert tags into array
@@ -200,16 +208,19 @@ export async function createPost(post: INewPost) {
       ID.unique(),
       {
         creator: post.userId,
-        caption: post.caption,
-        imageUrl: fileUrl,
-        imageId: uploadedFile.$id,
-        location: post.location,
+        caption: post.caption || "",
+        imageUrl: imageUrl,
+        imageId: imageId,
+        location: post.location || "",
         tags: tags,
       }
     );
 
     if (!newPost) {
-      await deleteFile(uploadedFile.$id);
+      // Clean up uploaded file if post creation failed
+      if (imageId && imageId !== "no-image") {
+        await deleteFile(imageId);
+      }
       throw Error;
     }
 
@@ -262,12 +273,20 @@ export async function deleteFile(fileId: string) {
 }
 
 // ============================== GET POSTS
-export async function searchPosts(searchTerm: string) {
+export async function searchPosts(searchTerm: string, searchType: 'caption' | 'tags' = 'caption') {
   try {
+    let queries = [];
+    
+    if (searchType === 'caption') {
+      queries.push(Query.search("caption", searchTerm));
+    } else if (searchType === 'tags') {
+      queries.push(Query.search("tags", searchTerm));
+    }
+    
     const posts = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      [Query.search("caption", searchTerm)]
+      queries
     );
 
     if (!posts) throw Error;
@@ -302,7 +321,14 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
 
 // ============================== GET POST BY ID
 export async function getPostById(postId?: string) {
-  if (!postId) throw Error;
+  if (!postId) {
+    console.log('getPostById: No postId provided');
+    return undefined;
+  }
+
+  console.log('getPostById: Attempting to fetch post:', postId);
+  console.log('getPostById: Using database ID:', appwriteConfig.databaseId);
+  console.log('getPostById: Using post collection ID:', appwriteConfig.postCollectionId);
 
   try {
     const post = await databases.getDocument(
@@ -311,17 +337,22 @@ export async function getPostById(postId?: string) {
       postId
     );
 
-    if (!post) throw Error;
+    if (!post) {
+      console.log('getPostById: Post not found for ID:', postId);
+      return undefined;
+    }
 
+    console.log('getPostById: Successfully fetched post:', post.$id);
     return post;
   } catch (error) {
-    console.log(error);
+    console.error('getPostById error for post ID:', postId, error);
+    return undefined;
   }
 }
 
 // ============================== UPDATE POST
 export async function updatePost(post: IUpdatePost) {
-  const hasFileToUpdate = post.file.length > 0;
+  const hasFileToUpdate = post.file && post.file.length > 0;
 
   try {
     let image = {
@@ -331,7 +362,7 @@ export async function updatePost(post: IUpdatePost) {
 
     if (hasFileToUpdate) {
       // Upload new file to appwrite storage
-      const uploadedFile = await uploadFile(post.file[0]);
+      const uploadedFile = await uploadFile(post.file![0]); // Use non-null assertion since we already checked hasFileToUpdate
       if (!uploadedFile) throw Error;
 
       // Get new file url
@@ -353,10 +384,10 @@ export async function updatePost(post: IUpdatePost) {
       appwriteConfig.postCollectionId,
       post.postId,
       {
-        caption: post.caption,
+        caption: post.caption || "",
         imageUrl: image.imageUrl,
         imageId: image.imageId,
-        location: post.location,
+        location: post.location || "",
         tags: tags,
       }
     );
@@ -373,7 +404,7 @@ export async function updatePost(post: IUpdatePost) {
     }
 
     // Safely delete old file after successful update
-    if (hasFileToUpdate) {
+    if (hasFileToUpdate && post.imageId && post.imageId !== "no-image") {
       await deleteFile(post.imageId);
     }
 
@@ -385,9 +416,33 @@ export async function updatePost(post: IUpdatePost) {
 
 // ============================== DELETE POST
 export async function deletePost(postId?: string, imageId?: string) {
-  if (!postId || !imageId) return;
+  if (!postId) return;
 
   try {
+    // First, find and delete all save records for this post
+    try {
+      const saveRecords = await databases.listDocuments(
+        appwriteConfig.databaseId,
+        appwriteConfig.savesCollectionId,
+        [Query.equal("post", postId)]
+      );
+
+      // Delete all save records for this post
+      if (saveRecords && saveRecords.documents.length > 0) {
+        for (const saveRecord of saveRecords.documents) {
+          await databases.deleteDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.savesCollectionId,
+            saveRecord.$id
+          );
+        }
+      }
+    } catch (saveError) {
+      // Log error but don't fail the post deletion
+      console.log("Error cleaning up save records:", saveError);
+    }
+
+    // Delete the post document
     const statusCode = await databases.deleteDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
@@ -396,7 +451,10 @@ export async function deletePost(postId?: string, imageId?: string) {
 
     if (!statusCode) throw Error;
 
-    await deleteFile(imageId);
+    // Only try to delete file if it's not our placeholder value and actually exists
+    if (imageId && imageId !== "no-image") {
+      await deleteFile(imageId);
+    }
 
     return { status: "Ok" };
   } catch (error) {
@@ -427,6 +485,21 @@ export async function likePost(postId: string, likesArray: string[]) {
 // ============================== SAVE POST
 export async function savePost(userId: string, postId: string) {
   try {
+    // Validate inputs
+    if (!userId || !postId) {
+      console.error('savePost: Missing userId or postId:', { userId, postId });
+      throw new Error('Missing userId or postId');
+    }
+
+    // Validate configuration
+    if (!appwriteConfig.databaseId || !appwriteConfig.savesCollectionId) {
+      console.error('savePost: Missing database configuration:', {
+        databaseId: appwriteConfig.databaseId,
+        savesCollectionId: appwriteConfig.savesCollectionId
+      });
+      throw new Error('Missing database configuration');
+    }
+
     const updatedPost = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.savesCollectionId,
@@ -437,11 +510,15 @@ export async function savePost(userId: string, postId: string) {
       }
     );
 
-    if (!updatedPost) throw Error;
+    if (!updatedPost) {
+      console.error('savePost: Failed to create save document');
+      throw Error;
+    }
 
     return updatedPost;
   } catch (error) {
-    console.log(error);
+    console.error('savePost error:', error);
+    throw error;
   }
 }
 // ============================== DELETE SAVED POST

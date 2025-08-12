@@ -13,9 +13,10 @@ import {
 type PostStatsProps = {
   post: Models.Document;
   userId: string;
+  onSaveChange?: () => void; // Callback to refresh saved posts
 };
 
-const PostStats = ({ post, userId }: PostStatsProps) => {
+const PostStats = ({ post, userId, onSaveChange }: PostStatsProps) => {
   const location = useLocation();
   
   // Safety check - if post is not properly loaded, don't render
@@ -27,20 +28,51 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
 
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
+  const [savedRecordId, setSavedRecordId] = useState<string | null>(null);
 
   const { mutate: likePost } = useLikePost();
-  const { mutate: savePost } = useSavePost();
-  const { mutate: deleteSavePost } = useDeleteSavedPost();
+  const { mutate: savePost, isPending: isSaving, error: saveError } = useSavePost();
+  const { mutate: deleteSavePost, isPending: isDeleting, error: deleteError } = useDeleteSavedPost();
 
   const { data: currentUser } = useGetCurrentUser();
 
-  const savedPostRecord = currentUser?.save?.find(
-    (record: Models.Document) => record?.post?.$id === post?.$id
-  ) || null;
-
+  // Check if this post is saved by querying the saves collection
   useEffect(() => {
-    setIsSaved(!!savedPostRecord);
-  }, [savedPostRecord]);
+    const checkIfSaved = async () => {
+      if (!currentUser?.$id || !post.$id) return;
+      
+      try {
+        const { databases } = await import('@/lib/appwrite/config');
+        const { appwriteConfig } = await import('@/lib/appwrite/config');
+        const { Query } = await import('appwrite');
+        
+        // Check if there's a save record for this post and user
+        const saveRecords = await databases.listDocuments(
+          appwriteConfig.databaseId,
+          appwriteConfig.savesCollectionId,
+          [
+            Query.equal("user", currentUser.$id),
+            Query.equal("post", post.$id)
+          ]
+        );
+        
+        if (saveRecords && saveRecords.documents.length > 0) {
+          const saveRecord = saveRecords.documents[0];
+          setIsSaved(true);
+          setSavedRecordId(saveRecord.$id);
+        } else {
+          setIsSaved(false);
+          setSavedRecordId(null);
+        }
+      } catch (error) {
+        console.error('Error checking save status:', error);
+        setIsSaved(false);
+        setSavedRecordId(null);
+      }
+    };
+
+    checkIfSaved();
+  }, [currentUser?.$id, post.$id]);
 
   const handleLikePost = (
     e: React.MouseEvent<HTMLElement, MouseEvent>
@@ -66,14 +98,41 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   ) => {
     e.stopPropagation();
 
-    if (savedPostRecord) {
-      setIsSaved(false);
-      return deleteSavePost(savedPostRecord.$id);
+    // Check if user is authenticated
+    if (!currentUser || !currentUser.$id) {
+      console.error('User not authenticated');
+      return;
     }
 
-    if (userId && post.$id) {
-      savePost({ userId: userId, postId: post.$id });
-      setIsSaved(true);
+    // Check if userId matches current user
+    if (userId !== currentUser.$id) {
+      console.error('UserId mismatch:', { userId, currentUserId: currentUser.$id });
+      return;
+    }
+
+    if (isSaved && savedRecordId) {
+      // Unsave the post
+      setIsSaved(false);
+      deleteSavePost(savedRecordId);
+      setSavedRecordId(null);
+      
+      // Call callback to refresh saved posts list
+      if (onSaveChange) {
+        setTimeout(() => onSaveChange(), 100);
+      }
+    } else {
+      // Save the post
+      if (userId && post.$id) {
+        savePost({ userId: userId, postId: post.$id });
+        setIsSaved(true);
+        
+        // Call callback to refresh saved posts list
+        if (onSaveChange) {
+          setTimeout(() => onSaveChange(), 100);
+        }
+      } else {
+        console.error('Missing userId or postId:', { userId, postId: post.$id });
+      }
     }
   };
 
@@ -102,7 +161,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
       </div>
 
       <div className="flex gap-4">
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-purple-500/30 transition-all duration-300 cursor-pointer group border-2 border-blue-500/30 hover:border-blue-500/50 shadow-lg hover:shadow-xl backdrop-blur-sm" onClick={(e) => handleSavePost(e)}>
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 hover:from-blue-500/30 hover:to-blue-500/30 transition-all duration-300 cursor-pointer group border-2 border-blue-500/30 hover:border-blue-500/50 shadow-lg hover:shadow-xl backdrop-blur-sm" onClick={(e) => handleSavePost(e)}>
           <img
             src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
             alt="save"
@@ -110,7 +169,20 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
             height={24}
             className="transition-transform duration-300 group-hover:scale-110"
           />
+          {(isSaving || isDeleting) && (
+            <div className="absolute inset-0 flex items-center justify-center bg-blue-500/20 rounded-2xl">
+              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+          {(saveError || deleteError) && (
+            <div className="absolute -top-2 -right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+          )}
         </div>
+        {(saveError || deleteError) && (
+          <div className="text-xs text-red-500 bg-red-100 px-2 py-1 rounded">
+            Error occurred
+          </div>
+        )}
       </div>
     </div>
   );

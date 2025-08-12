@@ -27,8 +27,18 @@ export const ProfileValidation = z.object({
 // POST
 // ============================================================
 export const PostValidation = z.object({
-  caption: z.string().min(5, { message: "Minimum 5 characters." }).max(2200, { message: "Maximum 2,200 caracters" }),
-  file: z.custom<File[]>(),
-  location: z.string().min(1, { message: "This field is required" }).max(1000, { message: "Maximum 1000 characters." }),
+  caption: z.string().max(2200, { message: "Maximum 2,200 characters" }).optional(),
+  file: z.custom<File[]>().optional(),
+  location: z.string().max(1000, { message: "Maximum 1000 characters." }).optional(),
   tags: z.string(),
+}).refine((data) => {
+  // Ensure at least one of caption, file, or location has content
+  const hasCaption = data.caption && data.caption.trim().length > 0;
+  const hasFile = data.file && data.file.length > 0;
+  const hasLocation = data.location && data.location.trim().length > 0;
+  
+  return hasCaption || hasFile || hasLocation;
+}, {
+  message: "At least one of Caption, Photo, or Location must be provided",
+  path: ["caption"] // This will show the error on the caption field
 });

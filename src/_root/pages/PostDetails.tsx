@@ -28,9 +28,9 @@ const PostDetails = () => {
   );
 
   const handleDeletePost = () => {
-    if (id && post?.imageId) {
+    if (id) {
       deletePost(
-        { postId: id, imageId: post.imageId },
+        { postId: id, imageId: post?.imageId || "no-image" },
         {
           onSuccess: () => {
             navigate(-1);
@@ -65,11 +65,13 @@ const PostDetails = () => {
         <Loader />
       ) : (
         <div className="post_details-card">
-          <img
-            src={post?.imageUrl}
-            alt="creator"
-            className="post_details-img"
-          />
+          {post?.imageUrl && (
+            <img
+              src={post.imageUrl}
+              alt="post image"
+              className="post_details-img"
+            />
+          )}
 
           <div className="post_details-info">
             <div className="flex-between w-full">
@@ -92,10 +94,14 @@ const PostDetails = () => {
                     <p className="subtle-semibold lg:small-regular ">
                       {multiFormatDateString(post?.$createdAt)}
                     </p>
-                    •
-                    <p className="subtle-semibold lg:small-regular">
-                      {post?.location}
-                    </p>
+                    {post?.location && (
+                      <>
+                        •
+                        <p className="subtle-semibold lg:small-regular">
+                          {post.location}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -131,16 +137,18 @@ const PostDetails = () => {
             <hr className="border w-full border-dark-4/80" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
-              <p>{post?.caption}</p>
-              <ul className="flex gap-1 mt-2">
-                {post?.tags.map((tag: string, index: string) => (
-                  <li
-                    key={`${tag}${index}`}
-                    className="text-light-3 small-regular">
-                    #{tag}
-                  </li>
-                ))}
-              </ul>
+              {post?.caption && <p>{post.caption}</p>}
+              {post?.tags && post.tags.length > 0 && (
+                <ul className="flex gap-1 mt-2">
+                  {post.tags.map((tag: string, index: string) => (
+                    <li
+                      key={`${tag}${index}`}
+                      className="text-light-3 small-regular">
+                      #{tag}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className="w-full">

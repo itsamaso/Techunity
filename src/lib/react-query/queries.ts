@@ -77,10 +77,10 @@ export const useGetPosts = () => {
   });
 };
 
-export const useSearchPosts = (searchTerm: string) => {
+export const useSearchPosts = (searchTerm: string, searchType: 'caption' | 'tags' = 'caption') => {
   return useQuery({
-    queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
-    queryFn: () => searchPosts(searchTerm),
+    queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm, searchType],
+    queryFn: () => searchPosts(searchTerm, searchType),
     enabled: !!searchTerm,
   });
 };
@@ -194,6 +194,9 @@ export const useSavePost = () => {
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
       });
     },
+    onError: (error) => {
+      console.error('useSavePost: Error occurred:', error);
+    },
   });
 };
 
@@ -211,6 +214,9 @@ export const useDeleteSavedPost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
       });
+    },
+    onError: (error) => {
+      console.error('useDeleteSavedPost: Error occurred:', error);
     },
   });
 };
