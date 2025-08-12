@@ -1,5 +1,9 @@
 <h1 align='center'> Current To-Do-List </h1>
 
+<h3 align='center'> Take into consideration that following To-Do-List is always changing and extending. </h3>
+
+<br>
+
 - ~Following/Followers not working and initial values are set to 20 instead of 0.~
 - ~Adjusting Location from required to optional.~
 - ~Adjusting Caption from required to optional.~
@@ -9,10 +13,14 @@
 - ~The delete button is only displayed after completing an update --> fix it to be displayed and working upon pressing the edit button.~
 - ~Once the delete button is pressed, the post is deleted. However, it routes to the editing-post page. Instead, it must go to the home page once the deletion is a success.~
 - ~Adjusting the UI colors - getting rid of ‘snapgram’ theme, lighter colors, keeping it modern and stylish.~
-- Adding searching functionality inside the People tab - to search for registered users across the platform.
+- Adding searching functionality inside the People tab - to search by "username", "name" and "bio".
 - Adjusting the Bio to required essential components that the user must fill. E.g; Experience, Field Of Study, Skills.
 - ~Adding Coding tab - where users can train their coding abilities.~
 - ~Adding Interact tab - where users can interact with other users in order to exchange knowledge and grow together.~
 - Adjusting the Top Creators tab to list the top users according to some advanced methodology. E.g; Calculating contribution score, ranking users based on their contributions and their Coding tab’s scores.
 - Adding Edit/Remove profile pictures and fix photos dimension matching issue.
+- In Explore tab, allowing to search posts by their "caption" and "tags".
+- Applying a major improvement on the overall app gradient colors design.
+- adding auto-sliding carousel manner for displaying the platform's posts.
+- adding comments system.
 
