@@ -1,9 +1,9 @@
 <h1 align='center'> Current To-Do-List </h1>
 
 - ~Following/Followers not working and initial values are set to 20 instead of 0.~
-- Adjusting Location from required to optional.
-- Adjusting Caption from required to optional.
-- Adjusting Profile Pic Upload from required to optional.
+- ~Adjusting Location from required to optional.~
+- ~Adjusting Caption from required to optional.~
+- ~Adjusting Profile Pic Upload from required to optional.~
 - In the Explore tab, every time attempting to search for posts - in case no results are found, the platform duplicates all existing posts.
 - In case a post was bookmarked/saved, then it got deleted from the database, the post remains listed in the Saved tab.
 - The delete button is only displayed after completing an update --> fix it to be displayed and working upon pressing the edit button.
