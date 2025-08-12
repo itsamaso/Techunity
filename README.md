@@ -5,9 +5,9 @@
 - ~Adjusting Caption from required to optional.~
 - ~Adjusting Profile Pic Upload from required to optional.~
 - In the Explore tab, every time attempting to search for posts - in case no results are found, the platform duplicates all existing posts.
-- In case a post was bookmarked/saved, then it got deleted from the database, the post remains listed in the Saved tab.
-- The delete button is only displayed after completing an update --> fix it to be displayed and working upon pressing the edit button.
-- Once the delete button is pressed, the post is deleted. However, it routes to the editing-post page. Instead, it must go to the home page once the deletion is a success.
+- ~In case a post was bookmarked/saved, then it got deleted from the database, the post remains listed in the Saved tab.~
+- ~The delete button is only displayed after completing an update --> fix it to be displayed and working upon pressing the edit button.~
+- ~Once the delete button is pressed, the post is deleted. However, it routes to the editing-post page. Instead, it must go to the home page once the deletion is a success.~
 - ~Adjusting the UI colors - getting rid of ‘snapgram’ theme, lighter colors, keeping it modern and stylish.~
 - Adding searching functionality inside the People tab - to search for registered users across the platform.
 - Adjusting the Bio to required essential components that the user must fill. E.g; Experience, Field Of Study, Skills.
