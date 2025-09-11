@@ -15,7 +15,7 @@
 - ~Adjusting the UI colors - getting rid of ‘snapgram’ theme, lighter colors, keeping it modern and stylish.~ ✔️
 - Adding searching functionality inside the People tab - to search by "username", "name" and "bio". 
 - Adjusting the Bio to required essential components that the user must fill. E.g; Experience, Field Of Study, Skills.
-- ~Adding Coding tab - where users can train their coding abilities.~ ✔️
+- Adding Coding tab - a coding-challenges system where users can train and enhance their coding abilities.
 - ~Adding Interact tab - a chat sytstem where users can interact with other users in order to exchange knowledge and grow together.~ ✔️
 - Adjusting the Top Creators tab to list the top users according to some advanced methodology. E.g; Calculating contribution score, ranking users based on their contributions and their Coding tab’s scores.
 - Adding Edit/Remove profile pictures and fix photos dimension matching issue.
