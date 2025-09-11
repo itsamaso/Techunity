@@ -11,6 +11,7 @@ import {
   UpdateProfile,
   AllUsers,
   Coding,
+  ChallengeDetail,
   Interact,
 } from "@/_root/pages";
 import AuthLayout from "./_auth/AuthLayout";
@@ -49,6 +50,7 @@ const App = () => {
             <Route path="/profile/:id/*" element={<Profile />} />
             <Route path="/update-profile/:id" element={<UpdateProfile />} />
             <Route path="/coding" element={<Coding />} />
+            <Route path="/coding/challenge/:challengeId" element={<ChallengeDetail />} />
             <Route path="/interact" element={<Interact />} />
           </Route>
         </Routes>

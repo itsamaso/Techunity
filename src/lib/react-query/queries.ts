@@ -45,8 +45,14 @@ import {
   assignAdminToGroup,
   removeAdminFromGroup,
   updateGroupDescription,
+  getChallenges,
+  getChallengeById,
+  submitChallengeAttempt,
+  getUserProgress,
+  getAchievements,
+  getUserChallengeAttempts,
 } from "@/lib/appwrite/api";
-import { INewPost, INewUser, IUpdatePost, IUpdateUser, INewChat, INewMessage } from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser, INewChat, INewMessage, INewUserChallengeAttempt } from "@/types";
 
 // ============================================================
 // AUTH QUERIES
@@ -554,5 +560,66 @@ export const useUpdateGroupDescription = () => {
         queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data?.$id],
       });
     },
+  });
+};
+
+// ============================================================
+// CODING CHALLENGES QUERIES
+// ============================================================
+
+export const useGetChallenges = (filters?: {
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
+  category?: string;
+  limit?: number;
+}) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_CHALLENGES, filters],
+    queryFn: () => getChallenges(filters),
+  });
+};
+
+export const useGetChallengeById = (challengeId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_CHALLENGE_BY_ID, challengeId],
+    queryFn: () => getChallengeById(challengeId),
+    enabled: !!challengeId,
+  });
+};
+
+export const useSubmitChallengeAttempt = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (attempt: INewUserChallengeAttempt) => submitChallengeAttempt(attempt),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_PROGRESS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHALLENGE_ATTEMPTS],
+      });
+    },
+  });
+};
+
+export const useGetUserProgress = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_PROGRESS, userId],
+    queryFn: () => getUserProgress(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetAchievements = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_ACHIEVEMENTS],
+    queryFn: getAchievements,
+  });
+};
+
+export const useGetUserChallengeAttempts = (userId: string, challengeId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_CHALLENGE_ATTEMPTS, userId, challengeId],
+    queryFn: () => getUserChallengeAttempts(userId, challengeId),
+    enabled: !!userId,
   });
 };

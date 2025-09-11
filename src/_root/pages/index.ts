@@ -9,4 +9,5 @@ export { default as PostDetails } from "./PostDetails";
 export { default as LikedPosts } from "./LikedPosts";
 export { default as AllUsers } from "./AllUsers";
 export { default as Coding } from "./Coding";
+export { default as ChallengeDetail } from "./ChallengeDetail";
 export { default as Interact } from "./Interact";

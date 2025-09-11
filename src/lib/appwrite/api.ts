@@ -1,7 +1,7 @@
 import { ID, Query } from "appwrite";
 import { Permission, Role } from "appwrite";
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser, INewChat, INewMessage } from "@/types";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser, INewChat, INewMessage, INewUserChallengeAttempt } from "@/types";
 
 // ============================================================
 // AUTH
@@ -1444,5 +1444,400 @@ export async function deleteChat(chatId: string) {
   } catch (error) {
     console.log("Delete chat error:", error);
     throw error;
+  }
+}
+
+// ============================================================
+// CODING CHALLENGES SYSTEM
+// ============================================================
+
+// ============================== GET ALL CHALLENGES
+export async function getChallenges(filters?: {
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
+  category?: string;
+  limit?: number;
+}) {
+  try {
+    // Check if collection ID is configured
+    if (!appwriteConfig.challengesCollectionId) {
+      console.log("Challenges collection not configured, returning empty result");
+      return { documents: [], total: 0 };
+    }
+
+    const queries: any[] = [Query.orderDesc("$createdAt")];
+    
+    if (filters?.difficulty) {
+      queries.push(Query.equal("difficulty", filters.difficulty));
+    }
+    
+    if (filters?.category) {
+      queries.push(Query.equal("category", filters.category));
+    }
+    
+    if (filters?.limit) {
+      queries.push(Query.limit(filters.limit));
+    }
+
+    const challenges = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.challengesCollectionId,
+      queries
+    );
+
+    if (!challenges) throw Error;
+
+    return challenges;
+  } catch (error) {
+    console.log("Get challenges error:", error);
+    // Return empty result instead of throwing error
+    return { documents: [], total: 0 };
+  }
+}
+
+// ============================== GET CHALLENGE BY ID
+export async function getChallengeById(challengeId: string) {
+  try {
+    // Check if collection ID is configured
+    if (!appwriteConfig.challengesCollectionId) {
+      console.log("Challenges collection not configured");
+      return null;
+    }
+
+    const challenge = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.challengesCollectionId,
+      challengeId
+    );
+
+    return challenge;
+  } catch (error) {
+    // If document not found (404), return null instead of throwing
+    if (error instanceof Error && error.message.includes('404')) {
+      console.log("Challenge not found in database, will use sample data");
+      return null;
+    }
+    console.log("Get challenge by ID error:", error);
+    return null;
+  }
+}
+
+// ============================== SUBMIT CHALLENGE ATTEMPT
+export async function submitChallengeAttempt(attempt: INewUserChallengeAttempt) {
+  try {
+    // For now, we'll simulate code execution
+    // In a real implementation, you'd send this to a code execution service
+    const isCorrect = await validateCode(attempt.code, attempt.challengeId);
+    
+    const newAttempt = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.challengeAttemptsCollectionId,
+      ID.unique(),
+      {
+        userId: attempt.userId,
+        challengeId: attempt.challengeId,
+        code: attempt.code,
+        isCorrect: isCorrect,
+        submittedAt: new Date().toISOString(),
+        language: attempt.language,
+      }
+    );
+
+    if (!newAttempt) throw Error;
+
+    // Update user progress if correct
+    if (isCorrect) {
+      await updateUserProgress(attempt.userId, attempt.challengeId);
+    }
+
+    return newAttempt;
+  } catch (error) {
+    console.log("Submit challenge attempt error:", error);
+    throw error;
+  }
+}
+
+// ============================== VALIDATE CODE (SIMULATED)
+async function validateCode(code: string, challengeId: string): Promise<boolean> {
+  // This is a simplified validation
+  // In a real implementation, you'd use a code execution service
+  // For now, we'll just check if the code contains basic patterns
+  
+  // Get the challenge to check against test cases
+  const challenge = await getChallengeById(challengeId);
+  if (!challenge) return false;
+
+  // Simple validation - check if code contains expected patterns
+  // This is just for demonstration - real validation would execute the code
+  const hasFunction = code.includes('function') || code.includes('=>');
+  const hasReturn = code.includes('return');
+  
+  return hasFunction && hasReturn;
+}
+
+// ============================== GET USER PROGRESS
+export async function getUserProgress(userId: string) {
+  try {
+    // Check if collection ID is configured
+    if (!appwriteConfig.userProgressCollectionId) {
+      console.log("User progress collection not configured, returning default progress");
+      return {
+        $id: 'default',
+        userId: userId,
+        totalChallengesSolved: 0,
+        totalPoints: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastActivityDate: new Date().toISOString(),
+        challengesByDifficulty: JSON.stringify({ Easy: 0, Medium: 0, Hard: 0 }),
+        challengesByCategory: JSON.stringify({ arrays: 0, strings: 0, math: 0, logic: 0, loops: 0, functions: 0 }),
+        achievements: [],
+        level: 1,
+        experience: 0,
+      };
+    }
+
+    const progress = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userProgressCollectionId,
+      [Query.equal("userId", userId)]
+    );
+
+    if (!progress || progress.documents.length === 0) {
+      // Create initial progress if doesn't exist
+      return await createUserProgress(userId);
+    }
+
+    return progress.documents[0];
+  } catch (error) {
+    console.log("Get user progress error:", error);
+    // Return default progress instead of throwing error
+    return {
+      $id: 'default',
+      userId: userId,
+      totalChallengesSolved: 0,
+      totalPoints: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastActivityDate: new Date().toISOString(),
+      challengesByDifficulty: JSON.stringify({ Easy: 0, Medium: 0, Hard: 0 }),
+      challengesByCategory: JSON.stringify({ arrays: 0, strings: 0, math: 0, logic: 0, loops: 0, functions: 0 }),
+      achievements: [],
+      level: 1,
+      experience: 0,
+    };
+  }
+}
+
+// ============================== CREATE USER PROGRESS
+export async function createUserProgress(userId: string) {
+  try {
+    const initialProgress = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userProgressCollectionId,
+      ID.unique(),
+      {
+        userId: userId,
+        totalChallengesSolved: 0,
+        totalPoints: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastActivityDate: new Date().toISOString(),
+        challengesByDifficulty: JSON.stringify({
+          easy: 0,
+          medium: 0,
+          hard: 0,
+        }),
+        challengesByCategory: JSON.stringify({
+          arrays: 0,
+          strings: 0,
+          math: 0,
+          logic: 0,
+          loops: 0,
+          functions: 0,
+        }),
+        achievements: [],
+        level: 1,
+        experience: 0,
+      }
+    );
+
+    if (!initialProgress) throw Error;
+
+    return initialProgress;
+  } catch (error) {
+    console.log("Create user progress error:", error);
+    throw error;
+  }
+}
+
+// ============================== UPDATE USER PROGRESS
+export async function updateUserProgress(userId: string, challengeId: string) {
+  try {
+    const progress = await getUserProgress(userId);
+    const challenge = await getChallengeById(challengeId);
+    
+    if (!progress || !challenge) throw Error;
+
+    // Check if user already solved this challenge
+    const existingAttempts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.challengeAttemptsCollectionId,
+      [
+        Query.equal("userId", userId),
+        Query.equal("challengeId", challengeId),
+        Query.equal("isCorrect", true)
+      ]
+    );
+
+    if (existingAttempts.documents.length > 0) {
+      return progress; // Already solved
+    }
+
+    // Update progress
+    const updatedProgress = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userProgressCollectionId,
+      progress.$id,
+      {
+        totalChallengesSolved: progress.totalChallengesSolved + 1,
+        totalPoints: progress.totalPoints + challenge.points,
+        lastActivityDate: new Date().toISOString(),
+        challengesByDifficulty: JSON.stringify({
+          ...JSON.parse(progress.challengesByDifficulty),
+          [challenge.difficulty]: JSON.parse(progress.challengesByDifficulty)[challenge.difficulty] + 1,
+        }),
+        challengesByCategory: JSON.stringify({
+          ...JSON.parse(progress.challengesByCategory),
+          [challenge.category]: JSON.parse(progress.challengesByCategory)[challenge.category] + 1,
+        }),
+        experience: progress.experience + challenge.points,
+        level: Math.floor((progress.experience + challenge.points) / 100) + 1,
+      }
+    );
+
+    if (!updatedProgress) throw Error;
+
+    // Check for new achievements
+    await checkAndAwardAchievements(userId, updatedProgress);
+
+    return updatedProgress;
+  } catch (error) {
+    console.log("Update user progress error:", error);
+    throw error;
+  }
+}
+
+// ============================== CHECK AND AWARD ACHIEVEMENTS
+export async function checkAndAwardAchievements(_userId: string, progress: any) {
+  try {
+    const achievements = await getAchievements();
+    const newAchievements = [];
+
+    for (const achievement of achievements) {
+      if (progress.achievements.includes(achievement.id)) continue;
+
+      let shouldAward = false;
+
+      switch (achievement.requirement.type) {
+        case 'challenges_solved':
+          shouldAward = progress.totalChallengesSolved >= achievement.requirement.value;
+          break;
+        case 'points_earned':
+          shouldAward = progress.totalPoints >= achievement.requirement.value;
+          break;
+        case 'streak_days':
+          shouldAward = progress.currentStreak >= achievement.requirement.value;
+          break;
+        case 'category_mastery':
+          if (achievement.requirement.category) {
+            shouldAward = JSON.parse(progress.challengesByCategory)[achievement.requirement.category] >= achievement.requirement.value;
+          }
+          break;
+        case 'perfect_score':
+          // This would need to be tracked separately
+          break;
+        case 'daily_activity':
+          // This would need to be tracked separately
+          break;
+      }
+
+      if (shouldAward) {
+        newAchievements.push(achievement.id);
+      }
+    }
+
+    if (newAchievements.length > 0) {
+      await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.userProgressCollectionId,
+        progress.$id,
+        {
+          achievements: [...progress.achievements, ...newAchievements],
+        }
+      );
+    }
+
+    return newAchievements;
+  } catch (error) {
+    console.log("Check achievements error:", error);
+    throw error;
+  }
+}
+
+// ============================== GET ACHIEVEMENTS
+export async function getAchievements() {
+  try {
+    // Check if collection ID is configured
+    if (!appwriteConfig.achievementsCollectionId) {
+      console.log("Achievements collection not configured, returning empty array");
+      return [];
+    }
+
+    const achievements = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.achievementsCollectionId,
+      [Query.orderAsc("points")]
+    );
+
+    if (!achievements) throw Error;
+
+    return achievements.documents;
+  } catch (error) {
+    console.log("Get achievements error:", error);
+    // Return empty array instead of throwing error
+    return [];
+  }
+}
+
+// ============================== GET USER CHALLENGE ATTEMPTS
+export async function getUserChallengeAttempts(userId: string, challengeId?: string) {
+  try {
+    // Check if collection ID is configured
+    if (!appwriteConfig.challengeAttemptsCollectionId) {
+      console.log("Challenge attempts collection not configured, returning empty result");
+      return { documents: [], total: 0 };
+    }
+
+    const queries: any[] = [Query.equal("userId", userId)];
+    
+    if (challengeId) {
+      queries.push(Query.equal("challengeId", challengeId));
+    }
+    
+    queries.push(Query.orderDesc("submittedAt"));
+
+    const attempts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.challengeAttemptsCollectionId,
+      queries
+    );
+
+    if (!attempts) throw Error;
+
+    return attempts;
+  } catch (error) {
+    console.log("Get user challenge attempts error:", error);
+    // Return empty result instead of throwing error
+    return { documents: [], total: 0 };
   }
 }

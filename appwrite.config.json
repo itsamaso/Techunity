@@ -1,0 +1,541 @@
+{
+    "projectId": "6845dc3e001d6a0ea1b0",
+    "endpoint": "https://fra.cloud.appwrite.io/v1",
+    "projectName": "temp",
+    "settings": {
+        "services": {
+            "account": true,
+            "avatars": true,
+            "databases": true,
+            "locale": true,
+            "health": true,
+            "storage": true,
+            "teams": true,
+            "users": true,
+            "sites": true,
+            "functions": true,
+            "graphql": true,
+            "messaging": true
+        },
+        "auth": {
+            "methods": {
+                "jwt": true,
+                "phone": true,
+                "invites": true,
+                "anonymous": true,
+                "email-otp": true,
+                "magic-url": true,
+                "email-password": true
+            },
+            "security": {
+                "duration": 31536000,
+                "limit": 0,
+                "sessionsLimit": 10,
+                "passwordHistory": 0,
+                "passwordDictionary": false,
+                "personalDataCheck": false,
+                "sessionAlerts": false,
+                "mockNumbers": []
+            }
+        }
+    },
+    "tablesDB": [
+        {
+            "$id": "6845e0ef000cada4f08c",
+            "name": "Techunity",
+            "enabled": true
+        }
+    ],
+    "tables": [
+        {
+            "$id": "6845e1a7001b4d8171f6",
+            "$permissions": [
+                "create(\"any\")",
+                "read(\"any\")",
+                "update(\"any\")",
+                "delete(\"any\")"
+            ],
+            "databaseId": "6845e0ef000cada4f08c",
+            "name": "Posts",
+            "enabled": true,
+            "columns": [
+                {
+                    "key": "creator",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1db0015f111d924",
+                    "relationType": "manyToOne",
+                    "twoWay": true,
+                    "twoWayKey": "posts",
+                    "onDelete": "setNull",
+                    "side": "parent"
+                },
+                {
+                    "key": "likes",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1db0015f111d924",
+                    "relationType": "manyToMany",
+                    "twoWay": true,
+                    "twoWayKey": "liked",
+                    "onDelete": "setNull",
+                    "side": "parent"
+                },
+                {
+                    "key": "caption",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "tags",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "imageId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "location",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "save",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1f700016167e061",
+                    "relationType": "manyToOne",
+                    "twoWay": true,
+                    "twoWayKey": "post",
+                    "onDelete": "setNull",
+                    "side": "child"
+                },
+                {
+                    "key": "imageUrl",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "caption",
+                    "type": "fulltext",
+                    "status": "available",
+                    "orders": [
+                        "DESC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "6845e1db0015f111d924",
+            "$permissions": [
+                "create(\"any\")",
+                "read(\"any\")",
+                "update(\"any\")",
+                "delete(\"any\")"
+            ],
+            "databaseId": "6845e0ef000cada4f08c",
+            "name": "Users",
+            "enabled": true,
+            "columns": [
+                {
+                    "key": "posts",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1a7001b4d8171f6",
+                    "relationType": "manyToOne",
+                    "twoWay": true,
+                    "twoWayKey": "creator",
+                    "onDelete": "setNull",
+                    "side": "child"
+                },
+                {
+                    "key": "liked",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1a7001b4d8171f6",
+                    "relationType": "manyToMany",
+                    "twoWay": true,
+                    "twoWayKey": "likes",
+                    "onDelete": "setNull",
+                    "side": "child"
+                },
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "username",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "accountId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "email",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "format": "email",
+                    "default": null
+                },
+                {
+                    "key": "bio",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "imageId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "save",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1f700016167e061",
+                    "relationType": "manyToOne",
+                    "twoWay": true,
+                    "twoWayKey": "user",
+                    "onDelete": "setNull",
+                    "side": "child"
+                },
+                {
+                    "key": "imageUrl",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "6845e1f700016167e061",
+            "$permissions": [
+                "create(\"any\")",
+                "read(\"any\")",
+                "update(\"any\")",
+                "delete(\"any\")"
+            ],
+            "databaseId": "6845e0ef000cada4f08c",
+            "name": "Saves",
+            "enabled": true,
+            "columns": [
+                {
+                    "key": "user",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1db0015f111d924",
+                    "relationType": "manyToOne",
+                    "twoWay": true,
+                    "twoWayKey": "save",
+                    "onDelete": "setNull",
+                    "side": "parent"
+                },
+                {
+                    "key": "post",
+                    "type": "relationship",
+                    "required": false,
+                    "array": false,
+                    "relatedTable": "6845e1a7001b4d8171f6",
+                    "relationType": "manyToOne",
+                    "twoWay": true,
+                    "twoWayKey": "save",
+                    "onDelete": "setNull",
+                    "side": "parent"
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "68936dad001218d1e83f",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "6845e0ef000cada4f08c",
+            "name": "followsCollectionId",
+            "enabled": true,
+            "columns": [
+                {
+                    "key": "follower",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "following",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 2200,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "index_1",
+                    "type": "fulltext",
+                    "status": "available",
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "index_2",
+                    "type": "fulltext",
+                    "status": "available",
+                    "orders": [
+                        "ASC"
+                    ]
+                },
+                {
+                    "key": "index_3",
+                    "type": "fulltext",
+                    "status": "available",
+                    "orders": [
+                        "ASC",
+                        "ASC"
+                    ]
+                }
+            ]
+        },
+        {
+            "$id": "chats",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "6845e0ef000cada4f08c",
+            "name": "chats",
+            "enabled": true,
+            "columns": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 10,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "participants",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 250,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "createdBy",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "lastMessage",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "lastMessageAt",
+                    "type": "datetime",
+                    "required": false,
+                    "array": false,
+                    "format": "",
+                    "default": null
+                },
+                {
+                    "key": "groupImageUrl",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "groupImageId",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 100,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "admins",
+                    "type": "string",
+                    "required": false,
+                    "array": true,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "description",
+                    "type": "string",
+                    "required": false,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        },
+        {
+            "$id": "messages",
+            "$permissions": [
+                "create(\"users\")",
+                "read(\"users\")",
+                "update(\"users\")",
+                "delete(\"users\")"
+            ],
+            "databaseId": "6845e0ef000cada4f08c",
+            "name": "messages",
+            "enabled": true,
+            "columns": [
+                {
+                    "key": "chatId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "senderId",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 255,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "content",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 1000,
+                    "default": null,
+                    "encrypt": false
+                },
+                {
+                    "key": "type",
+                    "type": "string",
+                    "required": true,
+                    "array": false,
+                    "size": 10,
+                    "default": null,
+                    "encrypt": false
+                }
+            ],
+            "indexes": []
+        }
+    ],
+    "buckets": [
+        {
+            "$id": "6845e0c000265d8f6d8b",
+            "$permissions": [
+                "create(\"any\")",
+                "read(\"any\")",
+                "update(\"any\")",
+                "delete(\"any\")"
+            ],
+            "fileSecurity": false,
+            "name": "media",
+            "enabled": true,
+            "maximumFileSize": 50000000,
+            "allowedFileExtensions": [],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        }
+    ]
+}

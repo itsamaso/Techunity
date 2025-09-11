@@ -20,3 +20,10 @@ export { default as AddMemberModal } from "./AddMemberModal";
 export { default as KickMembersModal } from "./KickMembersModal";
 export { default as AssignAdminModal } from "./AssignAdminModal";
 export { default as GroupInfoModal } from "./GroupInfoModal";
+
+// Coding Challenges Components
+export { default as ChallengeCard } from "./ChallengeCard";
+export { default as ChallengeDetail } from "./ChallengeDetail";
+export { default as CodeEditor } from "./CodeEditor";
+export { default as ProgressStats } from "./ProgressStats";
+export { default as AchievementsList } from "./AchievementsList";

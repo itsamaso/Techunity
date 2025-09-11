@@ -28,4 +28,11 @@ export enum QUERY_KEYS {
   GET_USER_CHATS = "getUserChats",
   GET_CHAT_BY_ID = "getChatById",
   GET_CHAT_MESSAGES = "getChatMessages",
+
+  // CODING CHALLENGES KEYS
+  GET_CHALLENGES = "getChallenges",
+  GET_CHALLENGE_BY_ID = "getChallengeById",
+  GET_USER_PROGRESS = "getUserProgress",
+  GET_ACHIEVEMENTS = "getAchievements",
+  GET_USER_CHALLENGE_ATTEMPTS = "getUserChallengeAttempts",
 }
