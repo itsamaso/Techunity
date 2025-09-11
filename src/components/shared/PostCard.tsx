@@ -62,17 +62,19 @@ const PostCard = ({ post, onSaveChange }: PostCardProps) => {
           </div>
         </div>
 
-        <Link
-          to={`/update-post/${post.$id}`}
-          className={`${user.id !== post.creator.$id && "hidden"} p-3.5 rounded-2xl bg-gradient-to-r from-primary-500/20 to-secondary-500/20 hover:from-primary-500/30 hover:to-secondary-500/30 transition-all duration-300 group border-2 border-primary-500/40 hover:border-primary-500/60 shadow-lg hover:shadow-xl backdrop-blur-sm`}>
-          <img
-            src={"/assets/icons/edit.svg"}
-            alt="edit"
-            width={22}
-            height={22}
-            className="group-hover:scale-110 transition-transform duration-300"
-          />
-        </Link>
+        {user.id === post.creator.$id && (
+          <Link
+            to={`/update-post/${post.$id}`}
+            className="p-3.5 rounded-2xl bg-gradient-to-r from-primary-500/20 to-secondary-500/20 hover:from-primary-500/30 hover:to-secondary-500/30 transition-all duration-300 group border-2 border-primary-500/40 hover:border-primary-500/60 shadow-lg hover:shadow-xl backdrop-blur-sm">
+            <img
+              src={"/assets/icons/edit.svg"}
+              alt="edit"
+              width={22}
+              height={22}
+              className="group-hover:scale-110 transition-transform duration-300"
+            />
+          </Link>
+        )}
       </div>
 
       <Link to={`/posts/${post.$id}`} className="group relative z-10">

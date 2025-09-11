@@ -28,6 +28,18 @@ const PostDetails = () => {
   );
 
   const handleDeletePost = () => {
+    // Security check: Only allow post owner to delete
+    if (!post || !user) {
+      console.error('Post or user not found');
+      return;
+    }
+
+    if (user.id !== post.creator.$id) {
+      console.error('Unauthorized: Only post owner can delete this post');
+      alert('You are not authorized to delete this post');
+      return;
+    }
+
     if (id) {
       deletePost(
         { postId: id, imageId: post?.imageId || "no-image" },
@@ -107,30 +119,31 @@ const PostDetails = () => {
               </Link>
 
               <div className="flex-center gap-4">
-                <Link
-                  to={`/update-post/${post?.$id}`}
-                  className={`${user.id !== post?.creator.$id && "hidden"}`}>
-                  <img
-                    src={"/assets/icons/edit.svg"}
-                    alt="edit"
-                    width={24}
-                    height={24}
-                  />
-                </Link>
+                {user.id === post?.creator.$id && (
+                  <>
+                    <Link
+                      to={`/update-post/${post?.$id}`}>
+                      <img
+                        src={"/assets/icons/edit.svg"}
+                        alt="edit"
+                        width={24}
+                        height={24}
+                      />
+                    </Link>
 
-                <Button
-                  onClick={handleDeletePost}
-                  variant="ghost"
-                  className={`post_details-delete_btn ${
-                    user.id !== post?.creator.$id && "hidden"
-                  }`}>
-                  <img
-                    src={"/assets/icons/delete.svg"}
-                    alt="delete"
-                    width={24}
-                    height={24}
-                  />
-                </Button>
+                    <Button
+                      onClick={handleDeletePost}
+                      variant="ghost"
+                      className="post_details-delete_btn">
+                      <img
+                        src={"/assets/icons/delete.svg"}
+                        alt="delete"
+                        width={24}
+                        height={24}
+                      />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
 

@@ -10,6 +10,8 @@ const requiredEnvVars = {
   VITE_APPWRITE_POST_COLLECTION_ID: import.meta.env.VITE_APPWRITE_POST_COLLECTION_ID,
   VITE_APPWRITE_SAVES_COLLECTION_ID: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID,
   VITE_APPWRITE_FOLLOWS_COLLECTION_ID: import.meta.env.VITE_APPWRITE_FOLLOWS_COLLECTION_ID,
+  VITE_APPWRITE_CHATS_COLLECTION_ID: import.meta.env.VITE_APPWRITE_CHATS_COLLECTION_ID,
+  VITE_APPWRITE_MESSAGES_COLLECTION_ID: import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID,
 };
 
 // Check for missing environment variables
@@ -31,6 +33,8 @@ export const appwriteConfig = {
   postCollectionId: import.meta.env.VITE_APPWRITE_POST_COLLECTION_ID,
   savesCollectionId: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID,
   followsCollectionId: import.meta.env.VITE_APPWRITE_FOLLOWS_COLLECTION_ID,
+  chatsCollectionId: import.meta.env.VITE_APPWRITE_CHATS_COLLECTION_ID,
+  messagesCollectionId: import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID,
 };
 
 // Log configuration (without sensitive data)
@@ -43,7 +47,17 @@ console.log('Appwrite Config:', {
   postCollectionId: appwriteConfig.postCollectionId,
   savesCollectionId: appwriteConfig.savesCollectionId,
   followsCollectionId: appwriteConfig.followsCollectionId,
+  chatsCollectionId: appwriteConfig.chatsCollectionId,
+  messagesCollectionId: appwriteConfig.messagesCollectionId,
 });
+
+// Check if chat collections are properly configured
+if (!appwriteConfig.chatsCollectionId) {
+  console.error('VITE_APPWRITE_CHATS_COLLECTION_ID is not set!');
+}
+if (!appwriteConfig.messagesCollectionId) {
+  console.error('VITE_APPWRITE_MESSAGES_COLLECTION_ID is not set!');
+}
 
 export const client = new Client();
 

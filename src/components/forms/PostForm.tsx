@@ -91,6 +91,23 @@ const PostForm = ({ post, action }: PostFormProps) => {
       return;
     }
 
+    // Security check: Only allow post owner to delete
+    if (!user) {
+      toast({
+        title: "User not authenticated.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (user.id !== post.creator.$id) {
+      toast({
+        title: "Unauthorized: Only post owner can delete this post.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Add confirmation dialog
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this post? This action cannot be undone."
@@ -211,7 +228,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
             Cancel
           </Button>
           
-          {action === "Update" && (
+          {action === "Update" && post && user && user.id === post.creator.$id && (
             <>
               <div className="w-px h-6 bg-gray-300 mx-2"></div>
               <Button

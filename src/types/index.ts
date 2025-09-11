@@ -51,3 +51,48 @@ export type IFollow = {
   followerId: string;
   followingId: string;
 };
+
+// Chat Types
+export type IChat = {
+  id: string;
+  name: string;
+  type: 'direct' | 'group';
+  participants: string[];
+  createdBy: string;
+  admins?: string[];
+  description?: string;
+  lastMessage?: string;
+  lastMessageAt?: string;
+  groupImageUrl?: string;
+  groupImageId?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type IMessage = {
+  id: string;
+  chatId: string;
+  senderId: string;
+  content: string;
+  type: 'text' | 'image' | 'file';
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type INewChat = {
+  name: string;
+  type: 'direct' | 'group';
+  participants: string[];
+  createdBy: string;
+  admins?: string[];
+  description?: string;
+  groupImageUrl?: string;
+  groupImageId?: string;
+};
+
+export type INewMessage = {
+  chatId: string;
+  senderId: string;
+  content: string;
+  type: 'text' | 'image' | 'file';
+};

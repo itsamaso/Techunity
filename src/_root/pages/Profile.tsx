@@ -1,6 +1,5 @@
 import { useParams, Link, useLocation } from "react-router-dom";
 
-import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/shared";
 import { GridPostList } from "@/components/shared";
 import FollowButton from "@/components/shared/FollowButton";
@@ -8,6 +7,7 @@ import FollowButton from "@/components/shared/FollowButton";
 import {
   useGetUserById,
   useGetUserPosts,
+  useGetLikedPosts,
   useGetFollowersCount,
   useGetFollowingCount,
 } from "@/lib/react-query/queries";
@@ -27,6 +27,7 @@ const Profile = () => {
 
   const { data: currentUser } = useGetUserById(id || "");
   const { data: userPosts } = useGetUserPosts(currentUser?.$id);
+  const { data: likedPosts } = useGetLikedPosts(currentUser?.$id);
   const { data: followersCount = 0 } = useGetFollowersCount(id || "");
   const { data: followingCount = 0 } = useGetFollowingCount(id || "");
 
@@ -54,7 +55,7 @@ const Profile = () => {
 
         <div className="profile-container">
           <div className="profile-inner_container">
-        <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7">
+        <div className="flex xl:flex-row flex-col max-xl:items-center flex-1 gap-7 mb-8">
           <img
             src={
               currentUser.imageUrl || "/assets/icons/profile-placeholder.svg"
@@ -139,8 +140,12 @@ const Profile = () => {
         </div>
       )}
 
-      <div className="flex max-w-5xl w-full">
-        <GridPostList posts={userPosts?.documents || []} showUser={false} />
+      <div className="flex max-w-5xl w-full min-h-[500px] mt-6">
+        {pathname === `/profile/${id}/liked-posts` ? (
+          <GridPostList posts={likedPosts?.documents || []} showUser={false} />
+        ) : (
+          <GridPostList posts={userPosts?.documents || []} showUser={false} />
+        )}
       </div>
         </div>
       </div>

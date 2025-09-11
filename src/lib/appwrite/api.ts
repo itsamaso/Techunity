@@ -1,7 +1,7 @@
 import { ID, Query } from "appwrite";
 import { Permission, Role } from "appwrite";
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser, INewChat, INewMessage } from "@/types";
 
 // ============================================================
 // AUTH
@@ -297,6 +297,36 @@ export async function searchPosts(searchTerm: string, searchType: 'caption' | 't
   }
 }
 
+// ============================== GET LIKED POSTS
+export async function getLikedPosts(userId: string) {
+  try {
+    // Get all posts
+    const posts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.orderDesc("$updatedAt")]
+    );
+
+    if (!posts) throw Error;
+
+    // Filter posts that are liked by the user
+    const likedPosts = posts.documents.filter(post => 
+      post.likes && post.likes.some((like: any) => like.$id === userId)
+    );
+
+    return {
+      documents: likedPosts,
+      total: likedPosts.length
+    };
+  } catch (error) {
+    console.log("getLikedPosts error:", error);
+    return {
+      documents: [],
+      total: 0
+    };
+  }
+}
+
 export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
   const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(9)];
 
@@ -355,6 +385,28 @@ export async function updatePost(post: IUpdatePost) {
   const hasFileToUpdate = post.file && post.file.length > 0;
 
   try {
+    // Get current user for authorization check
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing post to check ownership
+    const existingPost = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      post.postId
+    );
+
+    if (!existingPost) {
+      throw new Error("Post not found");
+    }
+
+    // Security check: Only allow post owner to update
+    if (existingPost.creator.$id !== currentUser.$id) {
+      throw new Error("Unauthorized: Only post owner can update this post");
+    }
+
     let image = {
       imageUrl: post.imageUrl,
       imageId: post.imageId,
@@ -419,6 +471,28 @@ export async function deletePost(postId?: string, imageId?: string) {
   if (!postId) return;
 
   try {
+    // Get current user for authorization check
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the post to check ownership
+    const post = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      postId
+    );
+
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    // Security check: Only allow post owner to delete
+    if (post.creator.$id !== currentUser.$id) {
+      throw new Error("Unauthorized: Only post owner can delete this post");
+    }
+
     // First, find and delete all save records for this post
     try {
       const saveRecords = await databases.listDocuments(
@@ -458,7 +532,8 @@ export async function deletePost(postId?: string, imageId?: string) {
 
     return { status: "Ok" };
   } catch (error) {
-    console.log(error);
+    console.log("Delete post error:", error);
+    throw error; // Re-throw to let the frontend handle the error
   }
 }
 
@@ -780,5 +855,594 @@ export async function checkIfFollowing(followerId: string, followingId: string) 
   } catch (error) {
     console.log(error);
     return null;
+  }
+}
+
+// ============================================================
+// CHAT SYSTEM
+// ============================================================
+
+// ============================== CREATE CHAT
+export async function createChat(chat: INewChat) {
+  try {
+    const newChat = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      ID.unique(),
+      {
+        name: chat.name,
+        type: chat.type,
+        participants: chat.participants,
+        createdBy: chat.createdBy,
+        lastMessage: "",
+        lastMessageAt: new Date().toISOString(),
+        groupImageUrl: chat.groupImageUrl || "",
+        groupImageId: chat.groupImageId || "no-image",
+      }
+    );
+
+    if (!newChat) throw Error;
+
+    return newChat;
+  } catch (error) {
+    console.log("Create chat error:", error);
+    throw error;
+  }
+}
+
+// ============================== GET USER CHATS
+export async function getUserChats(userId: string) {
+  try {
+    console.log('getUserChats - User ID:', userId);
+    console.log('getUserChats - Database ID:', appwriteConfig.databaseId);
+    console.log('getUserChats - Chats Collection ID:', appwriteConfig.chatsCollectionId);
+    
+    // Get all chats and filter participants in the application
+    const chats = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      [
+        Query.orderDesc("$createdAt")
+      ]
+    );
+
+    console.log('getUserChats - Response:', chats);
+    if (!chats) throw Error;
+
+    // Filter chats where the user is a participant
+    const userChats = {
+      ...chats,
+      documents: chats.documents.filter((chat: any) => 
+        chat.participants && chat.participants.includes(userId)
+      )
+    };
+
+    return userChats;
+  } catch (error) {
+    console.log("Get user chats error:", error);
+    throw error;
+  }
+}
+
+// ============================== GET CHAT BY ID
+export async function getChatById(chatId: string) {
+  try {
+    const chat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!chat) throw Error;
+
+    return chat;
+  } catch (error) {
+    console.log("Get chat by ID error:", error);
+    throw error;
+  }
+}
+
+// ============================== UPDATE CHAT
+export async function updateChat(chatId: string, updates: { 
+  lastMessage?: string; 
+  lastMessageAt?: string;
+  groupImageUrl?: string;
+  groupImageId?: string;
+}) {
+  try {
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      updates
+    );
+
+    if (!updatedChat) throw Error;
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Update chat error:", error);
+    throw error;
+  }
+}
+
+// ============================== UPDATE GROUP IMAGE
+export async function updateGroupImage(chatId: string, file: File) {
+  try {
+    // Get current user for authorization check
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing chat to check ownership
+    const existingChat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!existingChat) {
+      throw new Error("Chat not found");
+    }
+
+    // Security check: Only allow group creator to update image
+    if (existingChat.createdBy !== currentUser.$id) {
+      throw new Error("Unauthorized: Only group creator can update group image");
+    }
+
+    // Upload new file to appwrite storage
+    const uploadedFile = await uploadFile(file);
+    if (!uploadedFile) throw Error;
+
+    // Get new file url
+    const fileUrl = getFilePreview(uploadedFile.$id);
+    if (!fileUrl) {
+      await deleteFile(uploadedFile.$id);
+      throw Error;
+    }
+
+    // Update chat with new image
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      {
+        groupImageUrl: fileUrl,
+        groupImageId: uploadedFile.$id,
+      }
+    );
+
+    if (!updatedChat) {
+      await deleteFile(uploadedFile.$id);
+      throw Error;
+    }
+
+    // Delete old image if it exists
+    if (existingChat.groupImageId && existingChat.groupImageId !== "no-image") {
+      await deleteFile(existingChat.groupImageId);
+    }
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Update group image error:", error);
+    throw error;
+  }
+}
+
+// ============================== REMOVE PARTICIPANT FROM CHAT
+export async function removeParticipantFromChat(chatId: string, participantId: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing chat
+    const existingChat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!existingChat) {
+      throw new Error("Chat not found");
+    }
+
+    // Security checks
+    if (existingChat.type === 'direct') {
+      // For direct chats, only participants can remove themselves
+      if (participantId !== currentUser.$id) {
+        throw new Error("Unauthorized: You can only remove yourself from direct chats");
+      }
+    } else {
+      // For group chats, only group creator can remove others, or users can remove themselves
+      if (participantId !== currentUser.$id && existingChat.createdBy !== currentUser.$id) {
+        throw new Error("Unauthorized: Only group creator can remove other members");
+      }
+    }
+
+    // Remove participant from the participants array
+    const updatedParticipants = existingChat.participants.filter((id: string) => id !== participantId);
+
+    // If no participants left, delete the chat
+    if (updatedParticipants.length === 0) {
+      await deleteChat(chatId);
+      return { deleted: true };
+    }
+
+    // Update chat with new participants list
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      {
+        participants: updatedParticipants,
+      }
+    );
+
+    if (!updatedChat) throw Error;
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Remove participant error:", error);
+    throw error;
+  }
+}
+
+// ============================== KICK MEMBER FROM GROUP
+export async function kickMemberFromGroup(chatId: string, memberId: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing chat
+    const existingChat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!existingChat) {
+      throw new Error("Chat not found");
+    }
+
+    // Security check: Only group creator can kick members
+    if (existingChat.createdBy !== currentUser.$id) {
+      throw new Error("Unauthorized: Only group creator can kick members");
+    }
+
+    // Cannot kick the group creator
+    if (memberId === existingChat.createdBy) {
+      throw new Error("Cannot kick the group creator");
+    }
+
+    // Remove member from the participants array
+    const updatedParticipants = existingChat.participants.filter((id: string) => id !== memberId);
+
+    // Update chat with new participants list
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      {
+        participants: updatedParticipants,
+      }
+    );
+
+    if (!updatedChat) throw Error;
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Kick member error:", error);
+    throw error;
+  }
+}
+
+// ============================== ADD MEMBER TO GROUP
+export async function addMemberToGroup(chatId: string, memberId: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing chat
+    const existingChat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!existingChat) {
+      throw new Error("Chat not found");
+    }
+
+    // Security check: Only group creator can add members
+    if (existingChat.createdBy !== currentUser.$id) {
+      throw new Error("Unauthorized: Only group creator can add members");
+    }
+
+    // Check if member is already in the group
+    if (existingChat.participants.includes(memberId)) {
+      throw new Error("User is already a member of this group");
+    }
+
+    // Add member to the participants array
+    const updatedParticipants = [...existingChat.participants, memberId];
+
+    // Update chat with new participants list
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      {
+        participants: updatedParticipants,
+      }
+    );
+
+    if (!updatedChat) throw Error;
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Add member error:", error);
+    throw error;
+  }
+}
+
+// ============================== ASSIGN ADMIN TO GROUP
+export async function assignAdminToGroup(chatId: string, memberId: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing chat
+    const existingChat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!existingChat) {
+      throw new Error("Chat not found");
+    }
+
+    // Security check: Only group creator can assign admins
+    if (existingChat.createdBy !== currentUser.$id) {
+      throw new Error("Unauthorized: Only group creator can assign admins");
+    }
+
+    // Check if member is in the group
+    if (!existingChat.participants.includes(memberId)) {
+      throw new Error("User is not a member of this group");
+    }
+
+    // Check if already an admin
+    const currentAdmins = existingChat.admins || [];
+    if (currentAdmins.includes(memberId)) {
+      throw new Error("User is already an admin");
+    }
+
+    // Add member to admins array
+    const updatedAdmins = [...currentAdmins, memberId];
+
+    // Update chat with new admins list
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      {
+        admins: updatedAdmins,
+      }
+    );
+
+    if (!updatedChat) throw Error;
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Assign admin error:", error);
+    throw error;
+  }
+}
+
+// ============================== REMOVE ADMIN FROM GROUP
+export async function removeAdminFromGroup(chatId: string, memberId: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing chat
+    const existingChat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!existingChat) {
+      throw new Error("Chat not found");
+    }
+
+    // Security check: Only group creator can remove admins
+    if (existingChat.createdBy !== currentUser.$id) {
+      throw new Error("Unauthorized: Only group creator can remove admins");
+    }
+
+    // Remove member from admins array
+    const currentAdmins = existingChat.admins || [];
+    const updatedAdmins = currentAdmins.filter((id: string) => id !== memberId);
+
+    // Update chat with new admins list
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      {
+        admins: updatedAdmins,
+      }
+    );
+
+    if (!updatedChat) throw Error;
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Remove admin error:", error);
+    throw error;
+  }
+}
+
+// ============================== UPDATE GROUP DESCRIPTION
+export async function updateGroupDescription(chatId: string, description: string) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the existing chat
+    const existingChat = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!existingChat) {
+      throw new Error("Chat not found");
+    }
+
+    // Security check: Only group creator or admins can update description
+    const isCreator = existingChat.createdBy === currentUser.$id;
+    const isAdmin = existingChat.admins?.includes(currentUser.$id) || false;
+    
+    if (!isCreator && !isAdmin) {
+      throw new Error("Unauthorized: Only group creator or admins can update description");
+    }
+
+    // Update chat with new description
+    const updatedChat = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId,
+      {
+        description: description,
+      }
+    );
+
+    if (!updatedChat) throw Error;
+
+    return updatedChat;
+  } catch (error) {
+    console.log("Update description error:", error);
+    throw error;
+  }
+}
+
+// ============================== SEND MESSAGE
+export async function sendMessage(message: INewMessage) {
+  try {
+    const newMessage = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.messagesCollectionId,
+      ID.unique(),
+      {
+        chatId: message.chatId,
+        senderId: message.senderId,
+        content: message.content,
+        type: message.type,
+      }
+    );
+
+    if (!newMessage) throw Error;
+
+    // Update chat's last message
+    await updateChat(message.chatId, {
+      lastMessage: message.content,
+      lastMessageAt: newMessage.$createdAt,
+    });
+
+    return newMessage;
+  } catch (error) {
+    console.log("Send message error:", error);
+    throw error;
+  }
+}
+
+// ============================== GET CHAT MESSAGES
+export async function getChatMessages(chatId: string) {
+  try {
+    const messages = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.messagesCollectionId,
+      [
+        Query.equal("chatId", chatId),
+        Query.orderAsc("$createdAt")
+      ]
+    );
+
+    if (!messages) throw Error;
+
+    return messages;
+  } catch (error) {
+    console.log("Get chat messages error:", error);
+    throw error;
+  }
+}
+
+// ============================== DELETE MESSAGE
+export async function deleteMessage(messageId: string) {
+  try {
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.messagesCollectionId,
+      messageId
+    );
+
+    if (!statusCode) throw Error;
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.log("Delete message error:", error);
+    throw error;
+  }
+}
+
+// ============================== DELETE CHAT
+export async function deleteChat(chatId: string) {
+  try {
+    // First, delete all messages in the chat
+    const messages = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.messagesCollectionId,
+      [Query.equal("chatId", chatId)]
+    );
+
+    if (messages && messages.documents.length > 0) {
+      for (const message of messages.documents) {
+        await databases.deleteDocument(
+          appwriteConfig.databaseId,
+          appwriteConfig.messagesCollectionId,
+          message.$id
+        );
+      }
+    }
+
+    // Then delete the chat
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.chatsCollectionId,
+      chatId
+    );
+
+    if (!statusCode) throw Error;
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.log("Delete chat error:", error);
+    throw error;
   }
 }

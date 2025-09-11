@@ -13,6 +13,7 @@ export enum QUERY_KEYS {
   GET_RECENT_POSTS = "getRecentPosts",
   GET_POST_BY_ID = "getPostById",
   GET_USER_POSTS = "getUserPosts",
+  GET_LIKED_POSTS = "getLikedPosts",
   GET_FILE_PREVIEW = "getFilePreview",
 
   //  SEARCH KEYS
@@ -22,4 +23,9 @@ export enum QUERY_KEYS {
   GET_FOLLOWERS_COUNT = "getFollowersCount",
   GET_FOLLOWING_COUNT = "getFollowingCount",
   CHECK_IF_FOLLOWING = "checkIfFollowing",
+
+  // CHAT KEYS
+  GET_USER_CHATS = "getUserChats",
+  GET_CHAT_BY_ID = "getChatById",
+  GET_CHAT_MESSAGES = "getChatMessages",
 }

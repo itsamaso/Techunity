@@ -304,6 +304,79 @@
     transform: translateY(-1px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
+
+  /* Chat Interface */
+  .chat-container {
+    @apply h-full flex flex-col bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md rounded-2xl border border-primary-500/20 shadow-xl;
+  }
+
+  .chat-message {
+    @apply max-w-xs lg:max-w-md px-4 py-3 rounded-2xl transition-all duration-300;
+  }
+
+  .chat-message-own {
+    @apply bg-gradient-to-r from-primary-500 to-secondary-500 text-white;
+  }
+
+  .chat-message-other {
+    @apply bg-white/80 text-gray-800 border border-primary-500/20;
+  }
+
+  .chat-input {
+    @apply flex-1 px-4 py-3 bg-white/80 border border-primary-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300;
+  }
+
+  .chat-button {
+    @apply px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-xl hover:from-primary-600 hover:to-secondary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl;
+  }
+
+  .chat-list-item {
+    @apply p-4 rounded-xl cursor-pointer transition-all duration-300 mb-2;
+  }
+
+  .chat-list-item-active {
+    @apply bg-gradient-to-r from-primary-500/20 to-secondary-500/20 border-2 border-primary-500/40 shadow-lg;
+  }
+
+  .chat-list-item-inactive {
+    @apply bg-white/60 hover:bg-white/80 hover:shadow-md border border-transparent hover:border-primary-500/20;
+  }
+
+  .chat-avatar {
+    @apply w-12 h-12 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center text-white font-bold text-lg;
+  }
+
+  .chat-avatar-group {
+    @apply w-12 h-12 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center text-white font-bold text-lg;
+  }
+
+  .chat-status-indicator {
+    @apply absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white;
+  }
+
+  .chat-search {
+    @apply w-full px-4 py-3 pl-10 bg-white/80 border border-primary-500/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-300;
+  }
+
+  .chat-modal {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4;
+  }
+
+  .chat-modal-content {
+    @apply bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden;
+  }
+
+  .chat-modal-header {
+    @apply p-6 border-b border-gray-200 bg-gradient-to-r from-primary-500/10 to-secondary-500/10;
+  }
+
+  .chat-user-item {
+    @apply flex items-center p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200;
+  }
+
+  .chat-user-avatar {
+    @apply w-8 h-8 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 flex items-center justify-center text-white font-bold text-sm;
+  }
 }
 
 @layer components {

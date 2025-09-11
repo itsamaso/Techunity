@@ -16,6 +16,7 @@ import {
   getPostById,
   updatePost,
   getUserPosts,
+  getLikedPosts,
   deletePost,
   likePost,
   getUserById,
@@ -30,8 +31,22 @@ import {
   getFollowersCount,
   getFollowingCount,
   checkIfFollowing,
+  createChat,
+  getUserChats,
+  getChatById,
+  getChatMessages,
+  sendMessage,
+  deleteMessage,
+  deleteChat,
+  updateGroupImage,
+  removeParticipantFromChat,
+  kickMemberFromGroup,
+  addMemberToGroup,
+  assignAdminToGroup,
+  removeAdminFromGroup,
+  updateGroupDescription,
 } from "@/lib/appwrite/api";
-import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser, INewChat, INewMessage } from "@/types";
 
 // ============================================================
 // AUTH QUERIES
@@ -120,6 +135,14 @@ export const useGetUserPosts = (userId?: string) => {
   });
 };
 
+export const useGetLikedPosts = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_LIKED_POSTS, userId],
+    queryFn: () => getLikedPosts(userId!),
+    enabled: !!userId,
+  });
+};
+
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -170,6 +193,9 @@ export const useLikePost = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_LIKED_POSTS],
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
@@ -332,5 +358,201 @@ export const useCheckIfFollowing = (followerId: string, followingId: string) => 
     queryKey: [QUERY_KEYS.CHECK_IF_FOLLOWING, followerId, followingId],
     queryFn: () => checkIfFollowing(followerId, followingId),
     enabled: !!followerId && !!followingId,
+  });
+};
+
+// ============================================================
+// CHAT QUERIES
+// ============================================================
+
+export const useCreateChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (chat: INewChat) => createChat(chat),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+    },
+  });
+};
+
+export const useGetUserChats = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_CHATS, userId],
+    queryFn: () => getUserChats(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetChatById = (chatId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, chatId],
+    queryFn: () => getChatById(chatId),
+    enabled: !!chatId,
+  });
+};
+
+export const useGetChatMessages = (chatId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_CHAT_MESSAGES, chatId],
+    queryFn: () => getChatMessages(chatId),
+    enabled: !!chatId,
+  });
+};
+
+export const useSendMessage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (message: INewMessage) => sendMessage(message),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_MESSAGES, data?.chatId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+    },
+  });
+};
+
+export const useDeleteMessage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (messageId: string) => deleteMessage(messageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_MESSAGES],
+      });
+    },
+  });
+};
+
+export const useDeleteChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (chatId: string) => deleteChat(chatId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+    },
+  });
+};
+
+export const useUpdateGroupImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, file }: { chatId: string; file: File }) => updateGroupImage(chatId, file),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data?.$id],
+      });
+    },
+  });
+};
+
+export const useRemoveParticipantFromChat = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, participantId }: { chatId: string; participantId: string }) => 
+      removeParticipantFromChat(chatId, participantId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+      if (data?.deleted) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_CHAT_BY_ID],
+        });
+      } else if (data && '$id' in data) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data.$id],
+        });
+      }
+    },
+  });
+};
+
+export const useKickMemberFromGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, memberId }: { chatId: string; memberId: string }) => 
+      kickMemberFromGroup(chatId, memberId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data?.$id],
+      });
+    },
+  });
+};
+
+export const useAddMemberToGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, memberId }: { chatId: string; memberId: string }) => 
+      addMemberToGroup(chatId, memberId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data?.$id],
+      });
+    },
+  });
+};
+
+export const useAssignAdminToGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, memberId }: { chatId: string; memberId: string }) => 
+      assignAdminToGroup(chatId, memberId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data?.$id],
+      });
+    },
+  });
+};
+
+export const useRemoveAdminFromGroup = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, memberId }: { chatId: string; memberId: string }) => 
+      removeAdminFromGroup(chatId, memberId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data?.$id],
+      });
+    },
+  });
+};
+
+export const useUpdateGroupDescription = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, description }: { chatId: string; description: string }) => 
+      updateGroupDescription(chatId, description),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_CHATS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CHAT_BY_ID, data?.$id],
+      });
+    },
   });
 };
