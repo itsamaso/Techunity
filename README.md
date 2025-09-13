@@ -19,7 +19,6 @@
 - ~Adding auto-sliding carousel manner for displaying the platform's posts.~ ✔️
 - ~In the Explore tab, every time attempting to search for posts - in case no results are found, the platform duplicates all existing posts.~ ✔️
 - 
-- Adding comments system.
-- Adding searching functionality inside the People tab - to search by "username", "name" and "bio". 
-- Adjusting the Bio to required essential components that the user must fill. E.g; Experience, Field Of Study, Skills.
-- Adding Edit/Remove profile pictures and fix photos dimension matching issue.
+- ~Adding comments system.~ ✔️
+- ~Adding searching functionality inside the People tab - to search by "username" and "name".~ ✔️
+- ~Adding Edit/Remove profile pictures and fix photos dimension matching issue.~ ✔️
