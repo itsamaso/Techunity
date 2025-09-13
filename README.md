@@ -17,10 +17,9 @@
 - ~In Explore tab, allowing to search posts by their "caption" and "tags".~ ✔️
 - ~Applying a major improvement on the overall app gradient colors design (optional).~ ✔️
 - ~Adding auto-sliding carousel manner for displaying the platform's posts.~ ✔️
+- ~In the Explore tab, every time attempting to search for posts - in case no results are found, the platform duplicates all existing posts.~ ✔️
 - 
 - Adding comments system.
-- In the Explore tab, every time attempting to search for posts - in case no results are found, the platform duplicates all existing posts.
 - Adding searching functionality inside the People tab - to search by "username", "name" and "bio". 
 - Adjusting the Bio to required essential components that the user must fill. E.g; Experience, Field Of Study, Skills.
-- Adjusting the Top Creators tab to list the top users according to some advanced methodology. E.g; Calculating contribution score, ranking users based on their contributions and their Coding tab’s scores.
 - Adding Edit/Remove profile pictures and fix photos dimension matching issue.
