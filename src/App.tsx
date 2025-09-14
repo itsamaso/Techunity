@@ -19,7 +19,6 @@ import RootLayout from "./_root/RootLayout";
 import SignupForm from "@/_auth/forms/SignupForm";
 import SigninForm from "@/_auth/forms/SigninForm";
 import { Toaster } from "@/components/ui/toaster";
-import TopBar from "@/components/shared/TopBar";
 
 import "./globals.css";
 
@@ -29,7 +28,6 @@ const App = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      {!isAuthPage && <TopBar />}
       <div className={isAuthPage ? "flex-1" : "flex flex-1"}>
         <Routes>
           {/* public routes */}

@@ -4,7 +4,9 @@ import {
   Loader, 
   ChallengeCard, 
   ProgressStats, 
-  AchievementsList 
+  AchievementsList,
+  ChallengeFilters,
+  PageHeader
 } from "@/components/shared";
 import { 
   useGetChallenges, 
@@ -36,22 +38,6 @@ const Coding = () => {
   });
 
 
-  const difficulties = [
-    { value: 'all', label: 'All', color: 'bg-gray-100 text-gray-800', icon: '🎯' },
-    { value: 'Easy', label: 'Easy', color: 'bg-green-100 text-green-800', icon: '🟢' },
-    { value: 'Medium', label: 'Medium', color: 'bg-yellow-100 text-yellow-800', icon: '🟡' },
-    { value: 'Hard', label: 'Hard', color: '!bg-red-100 !text-red-800 !border-red-300', icon: '🔴' },
-  ];
-
-  const categories = [
-    { value: 'all', label: 'All Topics', icon: '📚' },
-    { value: 'arrays', label: 'Arrays', icon: '📊' },
-    { value: 'strings', label: 'Strings', icon: '📝' },
-    { value: 'math', label: 'Math', icon: '🔢' },
-    { value: 'logic', label: 'Logic', icon: '🧠' },
-    { value: 'loops', label: 'Loops', icon: '🔄' },
-    { value: 'functions', label: 'Functions', icon: '⚙️' },
-  ];
 
   if (isChallengesLoading || isProgressLoading || isAchievementsLoading) {
     return (
@@ -66,18 +52,15 @@ const Coding = () => {
   return (
     <div className="flex flex-1">
       <div className="common-container">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6 p-6 rounded-3xl bg-gradient-to-br from-blue-100/85 via-indigo-100/80 to-purple-100/85 border-2 border-primary-500/30 shadow-2xl backdrop-blur-md">
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-primary-500/25 to-secondary-500/25 shadow-md">
-            <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <PageHeader
+          title="Coding Challenges"
+          subtitle="Sharpen your skills with interactive coding challenges"
+          icon={
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
-          </div>
-          <div>
-            <h2 className="text-4xl font-black bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-600 bg-clip-text text-transparent tracking-tight drop-shadow-lg">Coding Challenges</h2>
-            <p className="text-base text-gray-800 font-bold mt-2">Practice coding with beginner-friendly challenges</p>
-          </div>
-        </div>
+          }
+        />
 
         {/* Tabs */}
         <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-xl">
@@ -96,7 +79,7 @@ const Coding = () => {
               }`}
             >
               <span>{tab.icon}</span>
-              <span>{tab.label}</span>
+              <span className="text-base">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -104,82 +87,89 @@ const Coding = () => {
 
         {/* Content based on active tab */}
         {activeTab === 'challenges' && (
-          <div className="space-y-6">
-            {/* Filters */}
-            <div className="bg-white rounded-2xl border border-light-4/30 shadow-lg p-6 max-w-4xl mx-auto">
-              <div className="text-center mb-6">
-                <h3 className="text-lg font-bold text-light-1 mb-2">🎯 Filter Challenges</h3>
-                <p className="text-sm text-light-3">Choose your difficulty and topic to find the perfect challenge</p>
-              </div>
-              
-              <div className="space-y-6">
-                {/* Difficulty Filter */}
-                <div className="text-center">
-                  <label className="block text-sm font-semibold text-light-1 mb-3">💪 Difficulty Level</label>
-                  <div className="flex justify-center gap-3 flex-wrap">
-                    {difficulties.map((difficulty) => (
-                      <button
-                        key={difficulty.value}
-                        onClick={() => setSelectedDifficulty(difficulty.value as any)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all border-2 ${
-                          selectedDifficulty === difficulty.value
-                            ? difficulty.color + ' shadow-md scale-105'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
-                        }`}
-                        style={selectedDifficulty === difficulty.value && difficulty.value === 'Hard' ? { backgroundColor: '#fecaca', color: '#991b1b', borderColor: '#fca5a5' } : {}}
-                      >
-                        <span className="text-lg">{difficulty.icon}</span>
-                        <span>{difficulty.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Category Filter */}
-                <div className="text-center">
-                  <label className="block text-sm font-semibold text-light-1 mb-3">📚 Topic Category</label>
-                  <div className="flex justify-center gap-2 flex-wrap">
-                    {categories.map((category) => (
-                      <button
-                        key={category.value}
-                        onClick={() => setSelectedCategory(category.value)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-semibold transition-all border-2 ${
-                          selectedCategory === category.value
-                            ? 'bg-primary-100 text-primary-600 border-primary-300 shadow-md scale-105'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
-                        }`}
-                      >
-                        <span className="text-base">{category.icon}</span>
-                        <span>{category.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Challenges Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredChallenges.map((challenge) => (
-                <ChallengeCard
-                  key={challenge.id}
-                  challenge={challenge}
-                  showStats={true}
+          <div className="w-full max-w-7xl mx-auto px-4 lg:px-8">
+            <div className="flex flex-col lg:flex-row w-full">
+              {/* Filters Section - Left Side */}
+              <div className="lg:w-80 flex-shrink-0 lg:pr-6 relative z-10">
+                <ChallengeFilters
+                  selectedDifficulty={selectedDifficulty}
+                  selectedCategory={selectedCategory}
+                  onDifficultyChange={(value) => setSelectedDifficulty(value as any)}
+                  onCategoryChange={setSelectedCategory}
+                  className="sticky top-4"
                 />
-              ))}
-            </div>
-
-            {filteredChallenges.length === 0 && (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.709M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-light-1 mb-2">No challenges found</h3>
-                <p className="text-light-3">Try adjusting your filters to see more challenges.</p>
               </div>
-            )}
+
+              {/* Vertical Separator */}
+              <div className="hidden lg:flex flex-col items-center justify-start py-4 px-2">
+                <div className="w-px h-16 bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+                <div className="w-2 h-2 bg-primary-500 rounded-full my-2"></div>
+                <div className="w-px h-16 bg-gradient-to-b from-transparent via-gray-300 to-transparent"></div>
+                <div className="w-1 h-1 bg-gray-400 rounded-full my-1"></div>
+                <div className="w-px h-12 bg-gradient-to-b from-transparent via-gray-200 to-transparent"></div>
+              </div>
+
+              {/* Challenges Section - Right Side */}
+              <div className="flex-1 min-w-0 lg:pl-6 relative z-10">
+                <div className="bg-gradient-to-br from-white/95 to-gray-50/90 backdrop-blur-sm rounded-3xl border border-gray-200/60 shadow-xl p-6 overflow-visible">
+                  {/* Challenges Header */}
+                  <div className="text-center mb-6">
+                    <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200/50 shadow-sm">
+                      <div className="p-2 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 shadow-md">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                      </div>
+                      <span className="font-bold text-lg text-gray-800 tracking-wide">Available Challenges</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-3">
+                      {filteredChallenges.length} challenge{filteredChallenges.length !== 1 ? 's' : ''} found
+                    </p>
+                  </div>
+
+                  {/* Challenges Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredChallenges.map((challenge) => (
+                      <ChallengeCard
+                        key={challenge.id}
+                        challenge={challenge}
+                        showStats={true}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Empty State */}
+                  {filteredChallenges.length === 0 && (
+                    <div className="text-center py-16">
+                      <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center shadow-lg">
+                        <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.29-1.009-5.824-2.709M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-3">No challenges found</h3>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Try adjusting your filters to discover more coding challenges that match your interests.
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <div className="w-2 h-2 bg-primary-400 rounded-full"></div>
+                        <div className="w-2 h-2 bg-secondary-400 rounded-full"></div>
+                        <div className="w-2 h-2 bg-primary-400 rounded-full"></div>
+                      </div>
+                    </div>
+                  )}
+
+
+                  {/* Footer Decoration */}
+                  <div className="mt-6 flex justify-center">
+                    <div className="flex gap-1">
+                      <div className="w-1 h-1 bg-primary-400 rounded-full"></div>
+                      <div className="w-1 h-1 bg-secondary-400 rounded-full"></div>
+                      <div className="w-1 h-1 bg-primary-400 rounded-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

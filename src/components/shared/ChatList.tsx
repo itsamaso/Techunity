@@ -12,9 +12,10 @@ interface ChatListProps {
   selectedChatId?: string;
   onChatDeleted?: () => void;
   onGroupInfoClick?: (chat: any) => void;
+  onCreateChat?: () => void;
 }
 
-const ChatList = ({ onSelectChat, selectedChatId, onChatDeleted, onGroupInfoClick }: ChatListProps) => {
+const ChatList = ({ onSelectChat, selectedChatId, onChatDeleted, onGroupInfoClick, onCreateChat }: ChatListProps) => {
   const { user } = useUserContext();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -97,7 +98,21 @@ const ChatList = ({ onSelectChat, selectedChatId, onChatDeleted, onGroupInfoClic
     <div className="flex flex-col h-full bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md rounded-2xl border border-primary-500/20 shadow-xl">
       {/* Header */}
       <div className="p-6 border-b border-primary-500/20">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Messages</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800">Messages</h2>
+          {/* New Chat Button */}
+          {onCreateChat && (
+            <button
+              onClick={onCreateChat}
+              className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:from-primary-600 hover:to-secondary-600 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2 text-sm font-medium"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              New Chat
+            </button>
+          )}
+        </div>
         
         {/* Search */}
         <div className="relative">

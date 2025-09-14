@@ -2,7 +2,7 @@ import { Models } from "appwrite";
 import { Link } from "react-router-dom";
 
 // import { useToast } from "@/components/ui/use-toast";
-import { Loader, PostCard } from "@/components/shared";
+import { Loader, PostCarousel, PageHeader } from "@/components/shared";
 import { useGetRecentPosts } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 
@@ -29,28 +29,23 @@ const Home = () => {
   return (
     <div className="flex flex-1">
       <div className="common-container">
+        <PageHeader
+          title="Home"
+          subtitle="Discover the latest posts from your community"
+          icon={
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          }
+        />
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-6 p-6 rounded-3xl bg-gradient-to-br from-blue-100/85 via-indigo-100/80 to-purple-100/85 border-2 border-primary-500/30 shadow-2xl backdrop-blur-md">
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-primary-500/25 to-secondary-500/25 shadow-md">
-              <svg className="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </div>
-            <div>
-              <h2 className="text-4xl font-black bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-600 bg-clip-text text-transparent tracking-tight drop-shadow-lg">Home Feed</h2>
-              <p className="text-base text-gray-800 font-bold mt-2">Discover the latest from your network</p>
-            </div>
-          </div>
           {isPostLoading && !posts ? (
             <Loader />
           ) : posts?.documents && posts.documents.length > 0 ? (
-            <ul className="flex flex-col flex-1 gap-9 w-full">
-              {posts.documents.map((post: Models.Document) => (
-                <li key={post.$id} className="flex justify-center w-full">
-                  <PostCard post={post} />
-                </li>
-              ))}
-            </ul>
+            <PostCarousel 
+              posts={posts.documents} 
+              autoSlideInterval={6000}
+            />
           ) : (
             <div className="flex flex-col items-center justify-center w-full py-20">
               <div className="p-8 rounded-3xl bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-md border border-light-4/30 shadow-xl">

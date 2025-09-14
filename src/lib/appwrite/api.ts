@@ -1,7 +1,7 @@
 import { ID, Query } from "appwrite";
 import { Permission, Role } from "appwrite";
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser, INewChat, INewMessage, INewUserChallengeAttempt } from "@/types";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser, INewChat, INewMessage, INewUserChallengeAttempt, INewComment } from "@/types";
 
 // ============================================================
 // AUTH
@@ -425,12 +425,21 @@ export async function updatePost(post: IUpdatePost) {
       }
 
       image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+    } else if (post.imageUrl === "" || post.imageUrl === null || post.imageUrl === undefined) {
+      // Handle case when photo is removed (imageUrl is empty)
+      console.log("Photo removal detected - setting empty image");
+      image = { imageUrl: "", imageId: "" };
     }
 
     // Convert tags into array
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
 
     //  Update post
+    console.log("Updating post with image data:", {
+      imageUrl: image.imageUrl,
+      imageId: image.imageId
+    });
+    
     const updatedPost = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
@@ -456,7 +465,7 @@ export async function updatePost(post: IUpdatePost) {
     }
 
     // Safely delete old file after successful update
-    if (hasFileToUpdate && post.imageId && post.imageId !== "no-image") {
+    if ((hasFileToUpdate || (post.imageUrl === "" || post.imageUrl === null || post.imageUrl === undefined)) && post.imageId && post.imageId !== "no-image") {
       await deleteFile(post.imageId);
     }
 
@@ -673,6 +682,46 @@ export async function getUsers(limit?: number) {
     return users;
   } catch (error) {
     console.log(error);
+  }
+}
+
+export async function searchUsers(searchTerm: string, searchType: 'username' | 'name' = 'username') {
+  try {
+    // Get all users and filter client-side for both username and name
+    // This approach works regardless of fulltext index configuration
+    const allUsers = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.orderDesc("$createdAt")]
+    );
+    
+    if (!allUsers) throw Error;
+    
+    let filteredUsers: any[] = [];
+    
+    if (searchType === 'username') {
+      // Filter users by username containing the search term (case-insensitive)
+      filteredUsers = allUsers.documents.filter(user => 
+        user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    } else if (searchType === 'name') {
+      // Filter users by name containing the search term (case-insensitive)
+      filteredUsers = allUsers.documents.filter(user => 
+        user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    return {
+      documents: filteredUsers,
+      total: filteredUsers.length
+    };
+  } catch (error) {
+    console.log("Search error:", error);
+    // Return empty result instead of undefined to prevent React Query errors
+    return {
+      documents: [],
+      total: 0
+    };
   }
 }
 
@@ -1839,5 +1888,93 @@ export async function getUserChallengeAttempts(userId: string, challengeId?: str
     console.log("Get user challenge attempts error:", error);
     // Return empty result instead of throwing error
     return { documents: [], total: 0 };
+  }
+}
+
+// ============================================================
+// COMMENT SYSTEM
+// ============================================================
+
+// ============================== CREATE COMMENT
+export async function createComment(comment: INewComment) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      ID.unique(),
+      {
+        postId: comment.postId,
+        userId: comment.userId,
+        content: comment.content,
+      }
+    );
+
+    if (!newComment) throw Error;
+
+    return newComment;
+  } catch (error) {
+    console.log("Create comment error:", error);
+    throw error;
+  }
+}
+
+// ============================== GET POST COMMENTS
+export async function getPostComments(postId: string) {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      [
+        Query.equal("postId", postId),
+        Query.orderAsc("$createdAt")
+      ]
+    );
+
+    if (!comments) throw Error;
+
+    return comments;
+  } catch (error) {
+    console.log("Get post comments error:", error);
+    return { documents: [], total: 0 };
+  }
+}
+
+// ============================== DELETE COMMENT
+export async function deleteComment(commentId: string) {
+  try {
+    // Get current user for authorization check
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Get the comment to check ownership
+    const comment = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      commentId
+    );
+
+    if (!comment) {
+      throw new Error("Comment not found");
+    }
+
+    // Security check: Only allow comment owner to delete
+    if (comment.userId !== currentUser.$id) {
+      throw new Error("Unauthorized: Only comment owner can delete this comment");
+    }
+
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      commentId
+    );
+
+    if (!statusCode) throw Error;
+
+    return { status: "Ok" };
+  } catch (error) {
+    console.log("Delete comment error:", error);
+    throw error;
   }
 }

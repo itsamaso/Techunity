@@ -5,19 +5,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300",
+  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-slate-900 text-slate-50 hover:bg-slate-900/90 dark:bg-slate-50 dark:text-slate-900 dark:hover:bg-slate-50/90",
+        default: "bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 text-white hover:from-primary-400 hover:via-secondary-400 hover:to-accent-400 shadow-lg hover:shadow-xl transform hover:scale-105",
         destructive:
-          "bg-red-500 text-slate-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-slate-50 dark:hover:bg-red-900/90",
+          "bg-red-500 text-white hover:bg-red-600 shadow-lg hover:shadow-xl transform hover:scale-105",
         outline:
-          "border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 dark:hover:text-slate-50",
+          "border-2 border-primary-500/30 bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-primary-50 hover:via-secondary-50 hover:to-accent-50 hover:border-primary-500/60 text-primary-600 hover:text-primary-700",
         secondary:
-          "bg-slate-100 text-slate-900 hover:bg-slate-100/80 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-800/80",
-        ghost: "hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-50",
-        link: "text-slate-900 underline-offset-4 hover:underline dark:text-slate-50",
+          "bg-gradient-to-r from-primary-100 to-secondary-100 text-primary-700 hover:from-primary-200 hover:to-secondary-200 shadow-md hover:shadow-lg transform hover:scale-105",
+        ghost: "hover:bg-gradient-to-r hover:from-primary-50 hover:via-secondary-50 hover:to-accent-50 text-primary-600 hover:text-primary-700",
+        link: "text-primary-600 underline-offset-4 hover:underline hover:text-primary-700",
+        gradient: "bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 hover:from-primary-400 hover:via-secondary-400 hover:to-accent-400 text-white shadow-xl hover:shadow-2xl transform hover:scale-110 hover:rotate-1",
       },
       size: {
         default: "h-10 px-4 py-2",

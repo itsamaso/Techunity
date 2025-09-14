@@ -18,6 +18,7 @@ export enum QUERY_KEYS {
 
   //  SEARCH KEYS
   SEARCH_POSTS = "getSearchPosts",
+  SEARCH_USERS = "getSearchUsers",
 
   // FOLLOW KEYS
   GET_FOLLOWERS_COUNT = "getFollowersCount",
@@ -35,4 +36,9 @@ export enum QUERY_KEYS {
   GET_USER_PROGRESS = "getUserProgress",
   GET_ACHIEVEMENTS = "getAchievements",
   GET_USER_CHALLENGE_ATTEMPTS = "getUserChallengeAttempts",
+
+  // COMMENT KEYS
+  GET_POST_COMMENTS = "getPostComments",
+  CREATE_COMMENT = "createComment",
+  DELETE_COMMENT = "deleteComment",
 }

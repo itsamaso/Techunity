@@ -1,7 +1,5 @@
 import { Models } from "appwrite";
-import { Link } from "react-router-dom";
-
-import { PostStats } from "@/components/shared";
+import PostCard from "./PostCard";
 import { useUserContext } from "@/context/AuthContext";
 
 type GridPostListProps = {
@@ -9,6 +7,7 @@ type GridPostListProps = {
   showUser?: boolean;
   showStats?: boolean;
   onSaveChange?: () => void; // Callback to refresh saved posts
+  showSimplifiedUI?: boolean; // For explore tab - hide like and comment buttons
 };
 
 const GridPostList = ({
@@ -16,6 +15,7 @@ const GridPostList = ({
   showUser = true,
   showStats = true,
   onSaveChange,
+  showSimplifiedUI = false,
 }: GridPostListProps) => {
   const { user } = useUserContext();
 
@@ -46,49 +46,13 @@ const GridPostList = ({
   }
 
   return (
-    <ul className="grid-container">
+    <div className="grid-container">
       {posts.map((post) => (
-        <li key={post.$id} className="relative min-w-80 h-80">
-          <Link to={`/posts/${post.$id}`} className="grid-post_link">
-            {post.imageUrl ? (
-              <img
-                src={post.imageUrl}
-                alt="post"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm font-medium">No Image</p>
-                </div>
-              </div>
-            )}
-          </Link>
-
-          <div className="grid-post_user">
-            {showUser && (
-              <div className="flex items-center justify-start gap-2 flex-1">
-                <img
-                  src={
-                    post.creator.imageUrl ||
-                    "/assets/icons/profile-placeholder.svg"
-                  }
-                  alt="creator"
-                  className="w-8 h-8 rounded-full"
-                />
-                <p className="line-clamp-1">{post.creator.name}</p>
-              </div>
-            )}
-            {showStats && <PostStats post={post} userId={user.id} onSaveChange={onSaveChange} />}
-          </div>
-        </li>
+        <div key={post.$id} className="grid-post-card">
+          <PostCard post={post} onSaveChange={onSaveChange} showSimplifiedUI={showSimplifiedUI} />
+        </div>
       ))}
-    </ul>
+    </div>
   );
 };
 

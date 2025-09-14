@@ -184,3 +184,22 @@ export type INewUserChallengeAttempt = {
   code: string;
   language: 'javascript' | 'python' | 'java' | 'cpp';
 };
+
+// ============================================================
+// COMMENT SYSTEM
+// ============================================================
+
+export type IComment = {
+  id: string;
+  postId: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type INewComment = {
+  postId: string;
+  userId: string;
+  content: string;
+};

@@ -56,3 +56,8 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
 export const checkIsLiked = (likeList: string[], userId: string) => {
   return likeList.includes(userId);
 };
+
+export const getFirstName = (fullName: string): string => {
+  if (!fullName) return '';
+  return fullName.split(' ')[0];
+};

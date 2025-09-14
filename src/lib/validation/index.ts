@@ -30,14 +30,17 @@ export const PostValidation = z.object({
   caption: z.string().max(2200, { message: "Maximum 2,200 characters" }).optional(),
   file: z.custom<File[]>().optional(),
   location: z.string().max(1000, { message: "Maximum 1000 characters." }).optional(),
-  tags: z.string(),
+  tags: z.string().optional(),
+  imageUrl: z.string().optional(),
+  imageId: z.string().optional(),
 }).refine((data) => {
   // Ensure at least one of caption, file, or location has content
   const hasCaption = data.caption && data.caption.trim().length > 0;
   const hasFile = data.file && data.file.length > 0;
   const hasLocation = data.location && data.location.trim().length > 0;
+  const hasImageUrl = data.imageUrl && data.imageUrl.trim().length > 0;
   
-  return hasCaption || hasFile || hasLocation;
+  return hasCaption || hasFile || hasLocation || hasImageUrl;
 }, {
   message: "At least one of Caption, Photo, or Location must be provided",
   path: ["caption"] // This will show the error on the caption field

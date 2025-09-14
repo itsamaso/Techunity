@@ -12,6 +12,7 @@ const requiredEnvVars = {
   VITE_APPWRITE_FOLLOWS_COLLECTION_ID: import.meta.env.VITE_APPWRITE_FOLLOWS_COLLECTION_ID,
   VITE_APPWRITE_CHATS_COLLECTION_ID: import.meta.env.VITE_APPWRITE_CHATS_COLLECTION_ID,
   VITE_APPWRITE_MESSAGES_COLLECTION_ID: import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID,
+  VITE_APPWRITE_COMMENTS_COLLECTION_ID: import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID,
 };
 
 // Optional environment variables for coding challenges
@@ -43,6 +44,7 @@ export const appwriteConfig = {
   followsCollectionId: import.meta.env.VITE_APPWRITE_FOLLOWS_COLLECTION_ID,
   chatsCollectionId: import.meta.env.VITE_APPWRITE_CHATS_COLLECTION_ID,
   messagesCollectionId: import.meta.env.VITE_APPWRITE_MESSAGES_COLLECTION_ID,
+  commentsCollectionId: import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID,
   // Optional collections for coding challenges
   challengesCollectionId: optionalEnvVars.VITE_APPWRITE_CHALLENGES_COLLECTION_ID,
   challengeAttemptsCollectionId: optionalEnvVars.VITE_APPWRITE_CHALLENGE_ATTEMPTS_COLLECTION_ID,
@@ -62,6 +64,7 @@ console.log('Appwrite Config:', {
   followsCollectionId: appwriteConfig.followsCollectionId,
   chatsCollectionId: appwriteConfig.chatsCollectionId,
   messagesCollectionId: appwriteConfig.messagesCollectionId,
+  commentsCollectionId: appwriteConfig.commentsCollectionId,
   challengesCollectionId: appwriteConfig.challengesCollectionId,
   challengeAttemptsCollectionId: appwriteConfig.challengeAttemptsCollectionId,
   userProgressCollectionId: appwriteConfig.userProgressCollectionId,

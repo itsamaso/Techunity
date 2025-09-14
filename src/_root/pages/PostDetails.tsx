@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui";
 import { Loader } from "@/components/shared";
-import { GridPostList, PostStats } from "@/components/shared";
+import { GridPostList, PostStats, CommentForm, CommentsList } from "@/components/shared";
 
 import {
   useGetPostById,
@@ -166,6 +166,28 @@ const PostDetails = () => {
 
             <div className="w-full">
               <PostStats post={post} userId={user.id} />
+            </div>
+
+            {/* Comments Section */}
+            <div className="w-full mt-6">
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Comments
+                </h3>
+                
+                {/* Comment Form */}
+                <div className="mb-6">
+                  <CommentForm 
+                    postId={post.$id} 
+                    onCommentAdded={() => {
+                      // Optional: Add any callback logic here
+                    }}
+                  />
+                </div>
+
+                {/* Comments List */}
+                <CommentsList postId={post.$id} />
+              </div>
             </div>
           </div>
         </div>

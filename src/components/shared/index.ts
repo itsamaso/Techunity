@@ -1,7 +1,9 @@
 export { default as Bottombar } from "./Bottombar";
-export { default as TopBar } from "./TopBar";
+export { default as Sidebar } from "./Sidebar";
 export { default as Loader } from "./Loader";
+export { default as PageHeader } from "./PageHeader";
 export { default as PostCard } from "./PostCard";
+export { default as PostCarousel } from "./PostCarousel";
 export { default as GridPostList } from "./GridPostList";
 
 export { default as UserCard } from "./UserCard";
@@ -27,3 +29,10 @@ export { default as ChallengeDetail } from "./ChallengeDetail";
 export { default as CodeEditor } from "./CodeEditor";
 export { default as ProgressStats } from "./ProgressStats";
 export { default as AchievementsList } from "./AchievementsList";
+export { default as ChallengeFilters } from "./ChallengeFilters";
+export { default as HorizontalDropdown } from "./HorizontalDropdown";
+
+// Comment Components
+export { default as CommentForm } from "./CommentForm";
+export { default as CommentItem } from "./CommentItem";
+export { default as CommentsList } from "./CommentsList";

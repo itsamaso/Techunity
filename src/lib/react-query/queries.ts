@@ -12,6 +12,7 @@ import {
   getCurrentUser,
   signOutAccount,
   getUsers,
+  searchUsers,
   createPost,
   getPostById,
   updatePost,
@@ -51,8 +52,11 @@ import {
   getUserProgress,
   getAchievements,
   getUserChallengeAttempts,
+  createComment,
+  getPostComments,
+  deleteComment,
 } from "@/lib/appwrite/api";
-import { INewPost, INewUser, IUpdatePost, IUpdateUser, INewChat, INewMessage, INewUserChallengeAttempt } from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser, INewChat, INewMessage, INewUserChallengeAttempt, INewComment } from "@/types";
 
 // ============================================================
 // AUTH QUERIES
@@ -271,6 +275,16 @@ export const useGetUsers = (limit?: number) => {
   });
 };
 
+export const useSearchUsers = (searchTerm: string, searchType: 'username' | 'name' = 'username') => {
+  return useQuery({
+    queryKey: ["getSearchUsers", searchTerm, searchType],
+    queryFn: () => searchUsers(searchTerm, searchType),
+    enabled: !!searchTerm,
+    retry: false, // Don't retry on error to avoid repeated failed requests
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+};
+
 export const useGetUserById = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
@@ -304,6 +318,7 @@ export const useFollowUser = () => {
     mutationFn: ({ followerId, followingId }: { followerId: string; followingId: string }) =>
       followUser(followerId, followingId),
     onSuccess: (_, variables) => {
+      console.log('Follow user success:', variables);
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID],
       });
@@ -318,6 +333,9 @@ export const useFollowUser = () => {
         queryKey: [QUERY_KEYS.CHECK_IF_FOLLOWING, variables.followerId, variables.followingId],
       });
     },
+    onError: (error) => {
+      console.error('Follow user error:', error);
+    },
   });
 };
 
@@ -326,6 +344,7 @@ export const useUnfollowUser = () => {
   return useMutation({
     mutationFn: (followRecordId: string) => unfollowUser(followRecordId),
     onSuccess: () => {
+      console.log('Unfollow user success');
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID],
       });
@@ -339,6 +358,9 @@ export const useUnfollowUser = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.CHECK_IF_FOLLOWING],
       });
+    },
+    onError: (error) => {
+      console.error('Unfollow user error:', error);
     },
   });
 };
@@ -621,5 +643,41 @@ export const useGetUserChallengeAttempts = (userId: string, challengeId?: string
     queryKey: [QUERY_KEYS.GET_USER_CHALLENGE_ATTEMPTS, userId, challengeId],
     queryFn: () => getUserChallengeAttempts(userId, challengeId),
     enabled: !!userId,
+  });
+};
+
+// ============================================================
+// COMMENT QUERIES
+// ============================================================
+
+export const useCreateComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (comment: INewComment) => createComment(comment),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_COMMENTS, data?.postId],
+      });
+    },
+  });
+};
+
+export const useGetPostComments = (postId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId],
+    queryFn: () => getPostComments(postId),
+    enabled: !!postId,
+  });
+};
+
+export const useDeleteComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (commentId: string) => deleteComment(commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_COMMENTS],
+      });
+    },
   });
 };
