@@ -19,7 +19,7 @@ Backend-as-a-Service. The platform unites the strengths of a social media networ
     completing challenges, showcasing code, and contributing to
     developer-centric conversations.
 
-> **Technology Stack:** React, TypeScript, Tailwind CSS & Appwrite (BaaS).
+    > **Technology Stack:** React, TypeScript, Tailwind CSS & Appwrite (BaaS).
 
 
 <h2 align="left">Core Features</h2>
@@ -41,8 +41,7 @@ Backend-as-a-Service. The platform unites the strengths of a social media networ
 
 <br>
 
-
-
+- Node.js
 
 <h2 align="left">How To Run</h2>
 
@@ -51,5 +50,44 @@ Backend-as-a-Service. The platform unites the strengths of a social media networ
 
 Follow these steps to set up and run the Techunity application:
 
+- **Clone repository:**
+  
+  ```
+  git clone https://github.com/itsamaso/Techunity
+  cd Techunity
 
-<br>
+- **Install Dependencies:**
+
+  ```
+  npm install
+
+- **Environment Configuration:**
+  
+  Create a .env file in the root directory by copying the template.
+  
+  ```
+  # Appwrite Configuration
+  VITE_APPWRITE_URL=https://fra.cloud.appwrite.io/v1
+  VITE_APPWRITE_PROJECT_ID=your_project_id_here
+  VITE_APPWRITE_DATABASE_ID=your_database_id_here
+  VITE_APPWRITE_STORAGE_ID=your_storage_id_here
+  
+  # Collection IDs (get these from your Appwrite console)
+  VITE_APPWRITE_USER_COLLECTION_ID=your_user_collection_id
+  VITE_APPWRITE_POST_COLLECTION_ID=your_post_collection_id
+  VITE_APPWRITE_SAVES_COLLECTION_ID=your_saves_collection_id
+  VITE_APPWRITE_FOLLOWS_COLLECTION_ID=your_follows_collection_id
+  VITE_APPWRITE_CHATS_COLLECTION_ID=chats
+  VITE_APPWRITE_MESSAGES_COLLECTION_ID=messages
+  VITE_APPWRITE_COMMENTS_COLLECTION_ID=comments
+  
+  # Optional: Coding Challenges Collections
+  VITE_APPWRITE_CHALLENGES_COLLECTION_ID=your_challenges_collection_id
+  VITE_APPWRITE_CHALLENGE_ATTEMPTS_COLLECTION_ID=your_challenge_attempts_collection_id
+  VITE_APPWRITE_USER_PROGRESS_COLLECTION_ID=your_user_progress_collection_id
+  VITE_APPWRITE_ACHIEVEMENTS_COLLECTION_ID=your_achievements_collection_id
+
+- **Run Development Server:**
+
+  ```
+  npm run dev
