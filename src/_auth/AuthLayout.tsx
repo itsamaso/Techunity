@@ -21,15 +21,12 @@ export default function AuthLayout() {
       {isAuthenticated ? (
         <Navigate to="/" />
       ) : (
-        <div style={{ 
-          minHeight: '100vh', 
-          backgroundColor: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}>
-          <Outlet />
+        <div className="min-h-screen flex items-center justify-center p-4 relative">
+          {/* Background overlay to match the main app */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-sm"></div>
+          <div className="relative z-10 w-full max-w-md">
+            <Outlet />
+          </div>
         </div>
       )}
     </>
