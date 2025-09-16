@@ -106,72 +106,39 @@ const SignupForm = () => {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      width: '100%',
-      maxWidth: '400px',
-      margin: '0 auto',
-      textAlign: 'center'
-    }}>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ 
-          fontSize: '3.5rem', 
-          fontWeight: '900',
-          background: 'linear-gradient(135deg, #8B9DC3 0%, #E6B17A 50%, #8B9DC3 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          marginBottom: '0.75rem',
-          textShadow: '0 4px 8px rgba(139, 157, 195, 0.3)',
-          letterSpacing: '-0.02em',
-          lineHeight: '1.1'
-        }}>
+    <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto text-center">
+      <div className="mb-8">
+        <h1 className="text-6xl font-black mb-3 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 bg-clip-text text-transparent drop-shadow-lg tracking-tight leading-tight">
           Techunity
         </h1>
-        <p style={{ 
-          fontSize: '1rem', 
-          color: '#64748B',
-          fontWeight: '600',
-          letterSpacing: '0.02em',
-          textTransform: 'uppercase',
-          opacity: '0.8'
-        }}>
+        <p className="text-base font-semibold text-light-3 tracking-wider uppercase opacity-80">
           Connect, Collaborate & Grow
         </p>
       </div>
 
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <h2 className="text-2xl font-bold mb-2 text-light-1">
         Create a new account
       </h2>
-      <p style={{ color: '#64748B', marginBottom: '3rem' }}>
+      <p className="text-light-3 mb-12">
         To use Techunity, Please enter your details
       </p>
 
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleSignup)}
-          style={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: '1.25rem',
-            width: '100%'
-          }}>
+          className="flex flex-col gap-5 w-full">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel style={{ color: '#1E293B', fontWeight: '500' }}>Name</FormLabel>
+                <FormLabel className="text-light-1 font-medium">Name</FormLabel>
                 <FormControl>
-                  <Input type="text" style={{ 
-                    height: '3rem',
-                    borderRadius: '0.75rem',
-                    border: '1px solid #CBD5E1',
-                    padding: '0.75rem',
-                    width: '100%'
-                  }} {...field} />
+                  <Input 
+                    type="text" 
+                    className="h-12 rounded-xl border-2 border-light-4/30 bg-white/80 backdrop-blur-sm focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300"
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -183,15 +150,13 @@ const SignupForm = () => {
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel style={{ color: '#1E293B', fontWeight: '500' }}>Username</FormLabel>
+                <FormLabel className="text-light-1 font-medium">Username</FormLabel>
                 <FormControl>
-                  <Input type="text" style={{ 
-                    height: '3rem',
-                    borderRadius: '0.75rem',
-                    border: '1px solid #CBD5E1',
-                    padding: '0.75rem',
-                    width: '100%'
-                  }} {...field} />
+                  <Input 
+                    type="text" 
+                    className="h-12 rounded-xl border-2 border-light-4/30 bg-white/80 backdrop-blur-sm focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300"
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -203,15 +168,13 @@ const SignupForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel style={{ color: '#1E293B', fontWeight: '500' }}>Email</FormLabel>
+                <FormLabel className="text-light-1 font-medium">Email</FormLabel>
                 <FormControl>
-                  <Input type="text" style={{ 
-                    height: '3rem',
-                    borderRadius: '0.75rem',
-                    border: '1px solid #CBD5E1',
-                    padding: '0.75rem',
-                    width: '100%'
-                  }} {...field} />
+                  <Input 
+                    type="text" 
+                    className="h-12 rounded-xl border-2 border-light-4/30 bg-white/80 backdrop-blur-sm focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300"
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -223,32 +186,25 @@ const SignupForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel style={{ color: '#1E293B', fontWeight: '500' }}>Password</FormLabel>
+                <FormLabel className="text-light-1 font-medium">Password</FormLabel>
                 <FormControl>
-                  <Input type="password" style={{ 
-                    height: '3rem',
-                    borderRadius: '0.75rem',
-                    border: '1px solid #CBD5E1',
-                    padding: '0.75rem',
-                    width: '100%'
-                  }} {...field} />
+                  <Input 
+                    type="password" 
+                    className="h-12 rounded-xl border-2 border-light-4/30 bg-white/80 backdrop-blur-sm focus:border-primary-500/60 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300"
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" style={{ 
-            height: '3rem',
-            borderRadius: '0.75rem',
-            background: 'linear-gradient(to right, #8B9DC3, #E6B17A)',
-            color: 'white',
-            border: 'none',
-            fontWeight: '600',
-            cursor: 'pointer'
-          }}>
+          <Button 
+            type="submit" 
+            className="h-12 rounded-xl bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 hover:from-primary-400 hover:via-secondary-400 hover:to-accent-400 text-white font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+          >
             {isCreatingAccount || isSigningInUser || isUserLoading ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="flex items-center gap-2">
                 <Loader /> Loading...
               </div>
             ) : (
@@ -256,11 +212,11 @@ const SignupForm = () => {
             )}
           </Button>
 
-          <p style={{ color: '#64748B', fontSize: '0.875rem', marginTop: '1rem' }}>
+          <p className="text-light-3 text-sm mt-4">
             Already have an account?
             <Link
               to="/sign-in"
-              style={{ color: '#8B9DC3', fontWeight: '600', marginLeft: '0.25rem' }}>
+              className="text-primary-500 font-semibold ml-1 hover:text-primary-400 transition-colors duration-300">
               Log in
             </Link>
           </p>
